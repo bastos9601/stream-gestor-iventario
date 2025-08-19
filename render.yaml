@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: gestor-cuentas-streaming
+    name: gestor-cuentas-stream
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -10,19 +10,13 @@ services:
         value: 3.9.16
       - key: SECRET_KEY
         generateValue: true
-      - key: FLASK_ENV
-        value: production
       - key: DATABASE_URL
         fromDatabase:
           name: gestor-cuentas-db
           property: connectionString
-    healthCheckPath: /
 
-  - type: pserv
-    name: gestor-cuentas-db
-    env: postgres
+databases:
+  - name: gestor-cuentas-db
+    databaseName: gestor_cuentas_db
+    user: gestor_cuentas_user
     plan: free
-    ipAllowList: []
-    maxConnections: 10
-    maintenanceWindow: sunday
-    pgVersion: "15"

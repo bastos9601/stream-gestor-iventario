@@ -16,8 +16,18 @@ app = Flask(__name__)
 
 # Configuración para Render
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu_clave_secreta_aqui_2024')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///cuentas_streaming.db')
+
+# Configuración de base de datos para PostgreSQL en Render
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///cuentas_streaming.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -53,6 +63,10 @@ class Cuenta(db.Model):
     precio = db.Column(db.Float, nullable=False)
     fecha_compra = db.Column(db.Date, nullable=False)
     fecha_venta = db.Column(db.Date)
+    # Campos del comprador
+    nombre_comprador = db.Column(db.String(100))
+    whatsapp_comprador = db.Column(db.String(20))
+    fecha_vencimiento = db.Column(db.Date)
     notas = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -67,6 +81,9 @@ class Cuenta(db.Model):
             'precio': self.precio,
             'fecha_compra': self.fecha_compra.strftime('%Y-%m-%d') if self.fecha_compra else None,
             'fecha_venta': self.fecha_venta.strftime('%Y-%m-%d') if self.fecha_venta else None,
+            'nombre_comprador': self.nombre_comprador,
+            'whatsapp_comprador': self.whatsapp_comprador,
+            'fecha_vencimiento': self.fecha_vencimiento.strftime('%Y-%m-%d') if self.fecha_vencimiento else None,
             'notas': self.notas,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
@@ -201,6 +218,14 @@ def nueva_cuenta():
             fecha_compra = datetime.strptime(request.form['fecha_compra'], '%Y-%m-%d').date()
             notas = request.form.get('notas', '')
             
+            # Manejar plataforma personalizada
+            if plataforma == 'Otro':
+                plataforma_otro = request.form.get('plataforma_otro', '').strip()
+                if not plataforma_otro:
+                    flash('❌ Debes especificar el nombre de la plataforma personalizada', 'error')
+                    return render_template('nueva_cuenta.html')
+                plataforma = plataforma_otro
+            
             nueva_cuenta = Cuenta(
                 plataforma=plataforma,
                 email=email,
@@ -241,7 +266,17 @@ def editar_cuenta(id):
     
     if request.method == 'POST':
         try:
-            cuenta.plataforma = request.form['plataforma']
+            plataforma = request.form['plataforma']
+            
+            # Manejar plataforma personalizada
+            if plataforma == 'Otro':
+                plataforma_otro = request.form.get('plataforma_otro', '').strip()
+                if not plataforma_otro:
+                    flash('❌ Debes especificar el nombre de la plataforma personalizada', 'error')
+                    return render_template('editar_cuenta.html', cuenta=cuenta)
+                plataforma = plataforma_otro
+            
+            cuenta.plataforma = plataforma
             cuenta.email = request.form['email']
             cuenta.password = request.form['password']
             cuenta.precio = float(request.form['precio'])
@@ -261,7 +296,7 @@ def editar_cuenta(id):
 @app.route('/cuentas/<int:id>/vender', methods=['POST'])
 @login_required
 def vender_cuenta(id):
-    """Marcar una cuenta como vendida (solo para administradores)"""
+    """Marcar una cuenta como vendida con datos del comprador (solo para administradores)"""
     if not current_user.es_admin:
         flash('❌ Solo los administradores pueden vender cuentas', 'error')
         return redirect(url_for('ver_cuenta', id=id))
@@ -269,14 +304,70 @@ def vender_cuenta(id):
     cuenta = Cuenta.query.get_or_404(id)
     
     if cuenta.estado == 'disponible':
-        cuenta.estado = 'vendida'
-        cuenta.fecha_venta = datetime.now().date()
-        db.session.commit()
-        flash('💰 Cuenta vendida exitosamente', 'success')
+        # Obtener datos del formulario
+        nombre_comprador = request.form.get('nombre_comprador')
+        whatsapp_comprador = request.form.get('whatsapp_comprador')
+        fecha_vencimiento = request.form.get('fecha_vencimiento')
+        
+        # Validar campos requeridos
+        if not nombre_comprador or not whatsapp_comprador or not fecha_vencimiento:
+            flash('❌ Todos los campos son obligatorios', 'error')
+            return redirect(url_for('ver_cuenta', id=id))
+        
+        try:
+            # Convertir fecha de vencimiento
+            fecha_vencimiento_obj = datetime.strptime(fecha_vencimiento, '%Y-%m-%d').date()
+            
+            # Actualizar cuenta
+            cuenta.estado = 'vendida'
+            cuenta.fecha_venta = datetime.now().date()
+            cuenta.nombre_comprador = nombre_comprador
+            cuenta.whatsapp_comprador = whatsapp_comprador
+            cuenta.fecha_vencimiento = fecha_vencimiento_obj
+            
+            db.session.commit()
+            
+            # Enviar mensaje por WhatsApp
+            mensaje_whatsapp = generar_mensaje_whatsapp(cuenta)
+            
+            flash(f'💰 Cuenta vendida exitosamente a {nombre_comprador}', 'success')
+            flash(f'📱 Mensaje preparado para WhatsApp: {whatsapp_comprador}', 'info')
+            
+        except ValueError:
+            flash('❌ Formato de fecha inválido', 'error')
+            return redirect(url_for('ver_cuenta', id=id))
+        except Exception as e:
+            flash(f'❌ Error al vender la cuenta: {str(e)}', 'error')
+            db.session.rollback()
+            return redirect(url_for('ver_cuenta', id=id))
     else:
         flash('❌ La cuenta ya no está disponible', 'error')
     
     return redirect(url_for('ver_cuenta', id=cuenta.id))
+
+def generar_mensaje_whatsapp(cuenta):
+    """Genera el mensaje de WhatsApp con los datos de la cuenta vendida"""
+    mensaje = f"""🎉 *¡Tu cuenta de {cuenta.plataforma} está lista!*
+
+📱 *Plataforma:* {cuenta.plataforma}
+📧 *Email:* {cuenta.email}
+🔑 *Contraseña:* {cuenta.password}
+💰 *Precio:* ${cuenta.precio}
+📅 *Fecha de compra:* {cuenta.fecha_venta.strftime('%d/%m/%Y')}
+⏰ *Vencimiento:* {cuenta.fecha_vencimiento.strftime('%d/%m/%Y')}
+
+✅ *Estado:* Cuenta activa y funcional
+
+⚠️ *Importante:* 
+• Guarda estos datos en un lugar seguro
+• No compartas la contraseña con nadie
+• La cuenta vence el {cuenta.fecha_vencimiento.strftime('%d/%m/%Y')}
+
+🆘 Si tienes algún problema, contáctanos.
+
+¡Disfruta de tu cuenta! 🎬"""
+    
+    return mensaje
 
 @app.route('/cuentas/<int:id>/eliminar', methods=['POST'])
 @login_required
@@ -422,6 +513,25 @@ def api_cuentas():
     
     cuentas = query.order_by(Cuenta.fecha_compra.desc()).all()
     return jsonify([cuenta.to_dict() for cuenta in cuentas])
+
+@app.route('/api/cuenta/<int:id>/mensaje-whatsapp')
+@login_required
+def api_mensaje_whatsapp(id):
+    """API para obtener el mensaje de WhatsApp de una cuenta vendida"""
+    if not current_user.es_admin:
+        return jsonify({'error': 'No tienes permisos para acceder a esta información'}), 403
+    
+    cuenta = Cuenta.query.get_or_404(id)
+    
+    if cuenta.estado != 'vendida':
+        return jsonify({'error': 'La cuenta no ha sido vendida'}), 400
+    
+    mensaje = generar_mensaje_whatsapp(cuenta)
+    return jsonify({
+        'mensaje': mensaje,
+        'whatsapp': cuenta.whatsapp_comprador,
+        'nombre_comprador': cuenta.nombre_comprador
+    })
 
 @app.errorhandler(404)
 def pagina_no_encontrada(error):

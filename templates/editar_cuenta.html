@@ -45,7 +45,7 @@
                                 <i class="fas fa-tv me-1"></i>
                                 Plataforma <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select" id="plataforma" name="plataforma" required>
+                            <select class="form-select" id="plataforma" name="plataforma" required onchange="togglePlataformaPersonalizada()">
                                 <option value="">Selecciona una plataforma</option>
                                 <option value="Netflix" {% if cuenta.plataforma == 'Netflix' %}selected{% endif %}>Netflix</option>
                                 <option value="Disney+" {% if cuenta.plataforma == 'Disney+' %}selected{% endif %}>Disney+</option>
@@ -64,6 +64,19 @@
                                 <option value="Otro" {% if cuenta.plataforma not in ['Netflix', 'Disney+', 'HBO Max', 'Amazon Prime Video', 'Apple TV+', 'Paramount+', 'Peacock', 'Hulu', 'Crunchyroll', 'Funimation', 'YouTube Premium', 'Spotify Premium', 'Tidal', 'Deezer'] %}selected{% endif %}>Otro</option>
                             </select>
                             <div class="form-text">Selecciona la plataforma de streaming</div>
+                            
+                            <!-- Campo para plataforma personalizada -->
+                            <div id="plataformaPersonalizada" class="mt-2" style="display: {% if cuenta.plataforma not in ['Netflix', 'Disney+', 'HBO Max', 'Amazon Prime Video', 'Apple TV+', 'Paramount+', 'Peacock', 'Hulu', 'Crunchyroll', 'Funimation', 'YouTube Premium', 'Spotify Premium', 'Tidal', 'Deezer'] %}block{% else %}none{% endif %};">
+                                <label for="plataforma_otro" class="form-label">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Nombre de la Plataforma <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="plataforma_otro" name="plataforma_otro" 
+                                       value="{% if cuenta.plataforma not in ['Netflix', 'Disney+', 'HBO Max', 'Amazon Prime Video', 'Apple TV+', 'Paramount+', 'Peacock', 'Hulu', 'Crunchyroll', 'Funimation', 'YouTube Premium', 'Spotify Premium', 'Tidal', 'Deezer'] %}{{ cuenta.plataforma }}{% endif %}" 
+                                       placeholder="Ej: Twitch Premium, Shudder, etc." maxlength="50" 
+                                       {% if cuenta.plataforma not in ['Netflix', 'Disney+', 'HBO Max', 'Amazon Prime Video', 'Apple TV+', 'Paramount+', 'Peacock', 'Hulu', 'Crunchyroll', 'Funimation', 'YouTube Premium', 'Spotify Premium', 'Tidal', 'Deezer'] %}required{% endif %}>
+                                <div class="form-text">Escribe el nombre de la plataforma personalizada</div>
+                            </div>
                         </div>
 
                         <!-- Email -->
@@ -259,9 +272,18 @@ function togglePassword() {
 
 // Form validation
 document.querySelector('form').addEventListener('submit', function(e) {
+    const plataforma = document.getElementById('plataforma').value;
+    const plataformaOtro = document.getElementById('plataforma_otro').value;
     const precio = document.getElementById('precio').value;
     const email = document.getElementById('email').value;
-    const plataforma = document.getElementById('plataforma').value;
+    
+    // Validar plataforma personalizada
+    if (plataforma === 'Otro' && (!plataformaOtro || plataformaOtro.trim() === '')) {
+        e.preventDefault();
+        alert('Por favor ingresa el nombre de la plataforma personalizada');
+        document.getElementById('plataforma_otro').focus();
+        return false;
+    }
     
     if (parseFloat(precio) <= 0) {
         e.preventDefault();
@@ -282,13 +304,28 @@ document.querySelector('form').addEventListener('submit', function(e) {
     }
 });
 
-// Auto-fill platform suggestions
-document.getElementById('plataforma').addEventListener('change', function() {
-    if (this.value === 'Otro') {
-        const customPlatform = prompt('Ingresa el nombre de la plataforma:');
-        if (customPlatform && customPlatform.trim()) {
-            this.value = customPlatform.trim();
-        }
+// Función para mostrar/ocultar campo de plataforma personalizada
+function togglePlataformaPersonalizada() {
+    const plataformaSelect = document.getElementById('plataforma');
+    const plataformaPersonalizada = document.getElementById('plataformaPersonalizada');
+    const plataformaOtro = document.getElementById('plataforma_otro');
+    
+    if (plataformaSelect.value === 'Otro') {
+        plataformaPersonalizada.style.display = 'block';
+        plataformaOtro.required = true;
+        plataformaOtro.focus();
+    } else {
+        plataformaPersonalizada.style.display = 'none';
+        plataformaOtro.required = false;
+        plataformaOtro.value = '';
+    }
+}
+
+// Inicializar estado del campo personalizado al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    const plataformaSelect = document.getElementById('plataforma');
+    if (plataformaSelect.value === 'Otro') {
+        togglePlataformaPersonalizada();
     }
 });
 
