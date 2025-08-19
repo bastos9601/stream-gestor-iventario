@@ -7,11 +7,24 @@ Configuraciones para diferentes entornos
 
 import os
 from datetime import timedelta
+import re
+
+def get_database_url():
+    """Obtener y formatear la URL de la base de datos"""
+    database_url = os.environ.get('DATABASE_URL')
+    
+    if database_url:
+        # Render usa postgres:// pero SQLAlchemy necesita postgresql://
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        return database_url
+    
+    return 'sqlite:///cuentas_streaming.db'
 
 class Config:
     """Configuración base"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'tu_clave_secreta_aqui_2024'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///cuentas_streaming.db'
+    SQLALCHEMY_DATABASE_URI = get_database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configuración de sesión

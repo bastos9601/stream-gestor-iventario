@@ -10,5 +10,19 @@ services:
         value: 3.9.16
       - key: SECRET_KEY
         generateValue: true
+      - key: FLASK_ENV
+        value: production
       - key: DATABASE_URL
-        value: sqlite:///cuentas_streaming.db
+        fromDatabase:
+          name: gestor-cuentas-db
+          property: connectionString
+    healthCheckPath: /
+
+  - type: pserv
+    name: gestor-cuentas-db
+    env: postgres
+    plan: free
+    ipAllowList: []
+    maxConnections: 10
+    maintenanceWindow: sunday
+    pgVersion: "15"
