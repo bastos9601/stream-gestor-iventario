@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Cuenta - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Cuenta
+                </h1>
+                <p class="lead text-muted">Modifica la información de la cuenta seleccionada</p>
+            </div>
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver
+                </a>
+                <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-list me-2"></i>
+                    Ver Todas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Información de la Cuenta
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('editar_cuenta', id=cuenta.id) }}">
+                    <div class="row g-3">
+                        <!-- Plataforma -->
+                        <div class="col-md-6">
+                            <label for="plataforma" class="form-label">
+                                <i class="fas fa-tv me-1"></i>
+                                Plataforma <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="plataforma" name="plataforma" required>
+                                <option value="">Selecciona una plataforma</option>
+                                <option value="Netflix" {% if cuenta.plataforma == 'Netflix' %}selected{% endif %}>Netflix</option>
+                                <option value="Disney+" {% if cuenta.plataforma == 'Disney+' %}selected{% endif %}>Disney+</option>
+                                <option value="HBO Max" {% if cuenta.plataforma == 'HBO Max' %}selected{% endif %}>HBO Max</option>
+                                <option value="Amazon Prime Video" {% if cuenta.plataforma == 'Amazon Prime Video' %}selected{% endif %}>Amazon Prime Video</option>
+                                <option value="Apple TV+" {% if cuenta.plataforma == 'Apple TV+' %}selected{% endif %}>Apple TV+</option>
+                                <option value="Paramount+" {% if cuenta.plataforma == 'Paramount+' %}selected{% endif %}>Paramount+</option>
+                                <option value="Peacock" {% if cuenta.plataforma == 'Peacock' %}selected{% endif %}>Peacock</option>
+                                <option value="Hulu" {% if cuenta.plataforma == 'Hulu' %}selected{% endif %}>Hulu</option>
+                                <option value="Crunchyroll" {% if cuenta.plataforma == 'Crunchyroll' %}selected{% endif %}>Crunchyroll</option>
+                                <option value="Funimation" {% if cuenta.plataforma == 'Funimation' %}selected{% endif %}>Funimation</option>
+                                <option value="YouTube Premium" {% if cuenta.plataforma == 'YouTube Premium' %}selected{% endif %}>YouTube Premium</option>
+                                <option value="Spotify Premium" {% if cuenta.plataforma == 'Spotify Premium' %}selected{% endif %}>Spotify Premium</option>
+                                <option value="Tidal" {% if cuenta.plataforma == 'Tidal' %}selected{% endif %}>Tidal</option>
+                                <option value="Deezer" {% if cuenta.plataforma == 'Deezer' %}selected{% endif %}>Deezer</option>
+                                <option value="Otro" {% if cuenta.plataforma not in ['Netflix', 'Disney+', 'HBO Max', 'Amazon Prime Video', 'Apple TV+', 'Paramount+', 'Peacock', 'Hulu', 'Crunchyroll', 'Funimation', 'YouTube Premium', 'Spotify Premium', 'Tidal', 'Deezer'] %}selected{% endif %}>Otro</option>
+                            </select>
+                            <div class="form-text">Selecciona la plataforma de streaming</div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ cuenta.email }}" placeholder="usuario@ejemplo.com" required>
+                            <div class="form-text">Email de acceso a la cuenta</div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>
+                                Contraseña <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       value="{{ cuenta.password }}" placeholder="Contraseña de la cuenta" required>
+                                <button class="btn btn-outline-secondary" type="button" 
+                                        onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Contraseña de acceso a la cuenta</div>
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="col-md-6">
+                            <label for="precio" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Precio <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio" name="precio" 
+                                       value="{{ cuenta.precio }}" placeholder="0.00" step="0.01" min="0" required>
+                            </div>
+                            <div class="form-text">Precio de venta de la cuenta</div>
+                        </div>
+
+                        <!-- Fecha de Compra -->
+                        <div class="col-md-6">
+                            <label for="fecha_compra" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Fecha de Compra <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="fecha_compra" name="fecha_compra" 
+                                   value="{{ cuenta.fecha_compra.strftime('%Y-%m-%d') }}" required>
+                            <div class="form-text">Fecha cuando adquiriste la cuenta</div>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="col-md-6">
+                            <label for="estado" class="form-label">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Estado Actual
+                            </label>
+                            <div class="form-control-plaintext">
+                                {% if cuenta.estado == 'disponible' %}
+                                    <span class="badge badge-disponible fs-6">
+                                        <i class="fas fa-check me-1"></i>Disponible
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-vendida fs-6">
+                                        <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">El estado se gestiona desde la vista de detalles</div>
+                        </div>
+
+                        <!-- Notas -->
+                        <div class="col-12">
+                            <label for="notas" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>
+                                Notas Adicionales
+                            </label>
+                            <textarea class="form-control" id="notas" name="notas" rows="3" 
+                                      placeholder="Información adicional sobre la cuenta (opcional)">{{ cuenta.notas or '' }}</textarea>
+                            <div class="form-text">Detalles como calidad, número de pantallas, etc.</div>
+                        </div>
+
+                        <!-- Información del Sistema -->
+                        <div class="col-12">
+                            <hr class="my-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">ID de la Cuenta</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge bg-secondary">#{{ cuenta.id }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">Fecha de Creación</label>
+                                    <div class="form-control-plaintext">
+                                        <i class="fas fa-clock text-muted me-2"></i>
+                                        {{ cuenta.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                    </div>
+                                </div>
+                                {% if cuenta.fecha_venta %}
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted">Fecha de Venta</label>
+                                    <div class="form-control-plaintext">
+                                        <i class="fas fa-calendar-check text-success me-2"></i>
+                                        {{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="col-12">
+                            <hr class="my-4">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="btn btn-outline-secondary me-md-2">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save me-2"></i>
+                                    Actualizar Cuenta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>
+                    Información de Edición
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-lightbulb text-warning me-2"></i>Campos Editables</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Plataforma de streaming</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Email de acceso</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Contraseña</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Precio de venta</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Fecha de compra</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Notas adicionales</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle text-info me-2"></i>Campos del Sistema</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-lock text-muted me-2"></i>ID de la cuenta (automático)</li>
+                            <li><i class="fas fa-lock text-muted me-2"></i>Fecha de creación (automático)</li>
+                            <li><i class="fas fa-lock text-muted me-2"></i>Estado (gestionado por acciones)</li>
+                            <li><i class="fas fa-lock text-muted me-2"></i>Fecha de venta (automático)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Toggle password visibility
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const precio = document.getElementById('precio').value;
+    const email = document.getElementById('email').value;
+    const plataforma = document.getElementById('plataforma').value;
+    
+    if (parseFloat(precio) <= 0) {
+        e.preventDefault();
+        alert('El precio debe ser mayor a 0');
+        return false;
+    }
+    
+    if (!email.includes('@')) {
+        e.preventDefault();
+        alert('Por favor ingresa un email válido');
+        return false;
+    }
+    
+    if (!plataforma) {
+        e.preventDefault();
+        alert('Por favor selecciona una plataforma');
+        return false;
+    }
+});
+
+// Auto-fill platform suggestions
+document.getElementById('plataforma').addEventListener('change', function() {
+    if (this.value === 'Otro') {
+        const customPlatform = prompt('Ingresa el nombre de la plataforma:');
+        if (customPlatform && customPlatform.trim()) {
+            this.value = customPlatform.trim();
+        }
+    }
+});
+
+// Confirm before leaving with unsaved changes
+let formChanged = false;
+document.querySelectorAll('input, select, textarea').forEach(element => {
+    element.addEventListener('change', () => {
+        formChanged = true;
+    });
+});
+
+window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+        e.preventDefault();
+        e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+    }
+});
+
+// Reset form changed flag when form is submitted
+document.querySelector('form').addEventListener('submit', function() {
+    formChanged = false;
+});
+</script>
+{% endblock %}

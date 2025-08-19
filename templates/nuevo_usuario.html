@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Nuevo Usuario - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Crear Nuevo Usuario
+                </h1>
+                <p class="lead text-muted">Agrega un nuevo usuario al sistema</p>
+            </div>
+            <a href="{{ url_for('listar_usuarios') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver a Usuarios
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Información del Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('nuevo_usuario') }}" id="nuevoUsuarioForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-1"></i>Nombre de Usuario
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   required
+                                   minlength="3"
+                                   maxlength="80"
+                                   placeholder="Ej: juan_perez">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Mínimo 3 caracteres, solo letras, números y guiones bajos
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>Email
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   required
+                                   placeholder="usuario@ejemplo.com">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Debe ser un email válido y único
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       required
+                                       minlength="6"
+                                       placeholder="Mínimo 6 caracteres">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        onclick="togglePassword('password')">
+                                    <i class="fas fa-eye" id="eye-password"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                La contraseña debe tener al menos 6 caracteres
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmar_password" class="form-label">
+                                <i class="fas fa-check-double me-1"></i>Confirmar Contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="confirmar_password" 
+                                       name="confirmar_password" 
+                                       required
+                                       placeholder="Repite la contraseña">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        onclick="togglePassword('confirmar_password')">
+                                    <i class="fas fa-eye" id="eye-confirmar_password"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="es_admin" 
+                                       name="es_admin">
+                                <label class="form-check-label" for="es_admin">
+                                    <i class="fas fa-crown me-2 text-danger"></i>
+                                    <strong>Es Administrador</strong>
+                                </label>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Los administradores tienen acceso completo al sistema
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary me-md-2" onclick="limpiarFormulario()">
+                                    <i class="fas fa-eraser me-2"></i>Limpiar
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Crear Usuario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Información de Roles -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información de Roles
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-danger">
+                        <i class="fas fa-crown me-1"></i>Administrador
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-1"></i>Acceso completo</li>
+                        <li><i class="fas fa-check text-success me-1"></i>Gestionar usuarios</li>
+                        <li><i class="fas fa-check text-success me-1"></i>Editar/eliminar cuentas</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h6 class="text-info">
+                        <i class="fas fa-user me-1"></i>Usuario
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-1"></i>Ver cuentas</li>
+                        <li><i class="fas fa-check text-success me-1"></i>Agregar cuentas</li>
+                        <li><i class="fas fa-times text-danger me-1"></i>Sin permisos de edición</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Consejos de Seguridad -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Consejos de Seguridad
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        Usa contraseñas seguras
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        Asigna roles según necesidad
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        Revisa permisos regularmente
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Función para mostrar/ocultar contraseñas
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const eyeIcon = document.getElementById('eye-' + inputId);
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+// Función para limpiar el formulario
+function limpiarFormulario() {
+    document.getElementById('nuevoUsuarioForm').reset();
+    
+    // Ocultar todas las contraseñas
+    const inputs = ['password', 'confirmar_password'];
+    inputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        const eyeIcon = document.getElementById('eye-' + inputId);
+        input.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    });
+}
+
+// Validación en tiempo real
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const confirmPassword = document.getElementById('confirmar_password').value;
+    
+    if (password.length < 6) {
+        this.setCustomValidity('La contraseña debe tener al menos 6 caracteres');
+    } else if (confirmPassword && password !== confirmPassword) {
+        this.setCustomValidity('Las contraseñas no coinciden');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('confirmar_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    
+    if (password !== confirmPassword) {
+        this.setCustomValidity('Las contraseñas no coinciden');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Confirmar antes de enviar
+document.getElementById('nuevoUsuarioForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmar_password').value;
+    const esAdmin = document.getElementById('es_admin').checked;
+    
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('❌ Las contraseñas no coinciden. Por favor, verifica.');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        e.preventDefault();
+        alert('❌ La contraseña debe tener al menos 6 caracteres.');
+        return false;
+    }
+    
+    const mensaje = esAdmin ? 
+        '¿Estás seguro de que quieres crear un usuario administrador?' :
+        '¿Estás seguro de que quieres crear este usuario?';
+    
+    return confirm(mensaje);
+});
+</script>
+{% endblock %}

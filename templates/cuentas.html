@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Cuentas - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-list me-2"></i>
+                    Gestión de Cuentas
+                </h1>
+                <p class="lead text-muted">Administra tu inventario de cuentas de streaming</p>
+            </div>
+            <a href="{{ url_for('nueva_cuenta') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Nueva Cuenta
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtros
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('listar_cuentas') }}" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="disponible" {% if filtro_estado == 'disponible' %}selected{% endif %}>Disponible</option>
+                            <option value="vendida" {% if filtro_estado == 'vendida' %}selected{% endif %}>Vendida</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="plataforma" class="form-label">Plataforma</label>
+                        <select class="form-select" id="plataforma" name="plataforma">
+                            <option value="">Todas las plataformas</option>
+                            {% for p in plataformas_disponibles %}
+                            <option value="{{ p.plataforma }}" {% if filtro_plataforma == p.plataforma %}selected{% endif %}>
+                                {{ p.plataforma }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="d-grid gap-2 w-100">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>
+                                Filtrar
+                            </button>
+                            <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Limpiar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Lista de Cuentas
+                    <span class="badge bg-primary ms-2">{{ cuentas|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if cuentas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Plataforma</th>
+                                    <th>Email</th>
+                                    <th>Precio</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Compra</th>
+                                    <th>Fecha Venta</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cuenta in cuentas %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">#{{ cuenta.id }}</span>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-tv me-2"></i>
+                                        <strong>{{ cuenta.plataforma }}</strong>
+                                    </td>
+                                    <td>
+                                        <code>{{ cuenta.email }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                onclick="copyToClipboard('{{ cuenta.email }}')"
+                                                title="Copiar email">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">${{ "%.2f"|format(cuenta.precio) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if cuenta.estado == 'disponible' %}
+                                            <span class="badge badge-disponible">
+                                                <i class="fas fa-check me-1"></i>Disponible
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-vendida">
+                                                <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        {% if cuenta.fecha_venta %}
+                                            <span class="text-success">{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
+                                               class="btn btn-sm btn-primary" 
+                                               title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" 
+                                               class="btn btn-sm btn-warning" 
+                                               title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if cuenta.estado == 'disponible' %}
+                                            <form method="POST" action="{{ url_for('vender_cuenta', id=cuenta.id) }}" 
+                                                  class="d-inline" 
+                                                  onsubmit="return confirm('¿Marcar esta cuenta como vendida?')">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Marcar como vendida">
+                                                    <i class="fas fa-dollar-sign"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                            <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
+                                                  class="d-inline" 
+                                                  onsubmit="return confirmDelete()">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <h4>No se encontraron cuentas</h4>
+                        <p>No hay cuentas que coincidan con los filtros aplicados</p>
+                        <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-list me-2"></i>
+                            Ver todas
+                        </a>
+                        <a href="{{ url_for('nueva_cuenta') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Agregar cuenta
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+{% if cuentas %}
+<div class="row mt-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ cuentas|length }}</h3>
+                <p class="text-muted mb-0">Total filtrado</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ cuentas|selectattr('estado', 'equalto', 'disponible')|list|length }}</h3>
+                <p class="text-muted mb-0">Disponibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-warning">{{ cuentas|selectattr('estado', 'equalto', 'vendida')|list|length }}</h3>
+                <p class="text-muted mb-0">Vendidas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">${{ "%.2f"|format(cuentas|selectattr('estado', 'equalto', 'disponible')|sum(attribute='precio')) }}</h3>
+                <p class="text-muted mb-0">Valor total</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-submit form when filters change
+document.getElementById('estado').addEventListener('change', function() {
+    this.form.submit();
+});
+
+document.getElementById('plataforma').addEventListener('change', function() {
+    this.form.submit();
+});
+
+// Search functionality (you can implement this if needed)
+function searchAccounts(query) {
+    // Implementation for search functionality
+    console.log('Searching for:', query);
+}
+</script>
+{% endblock %}

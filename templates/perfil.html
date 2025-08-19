@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil de Usuario - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-user-edit me-2"></i>
+            Perfil de Usuario
+        </h1>
+        <p class="lead text-muted">Gestiona tu información personal y cambia tu contraseña</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información del Usuario -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Información del Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="user-avatar mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    <h4 class="text-primary">{{ current_user.username }}</h4>
+                    <p class="text-muted mb-0">{{ current_user.email }}</p>
+                    <span class="badge bg-{{ 'success' if current_user.es_admin else 'info' }} mt-2">
+                        <i class="fas fa-{{ 'crown' if current_user.es_admin else 'user' }} me-1"></i>
+                        {{ 'Administrador' if current_user.es_admin else 'Usuario' }}
+                    </span>
+                </div>
+                
+                <div class="user-details">
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Usuario:</div>
+                        <div class="col-8 fw-bold">{{ current_user.username }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Email:</div>
+                        <div class="col-8 fw-bold">{{ current_user.email }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Registro:</div>
+                        <div class="col-8 fw-bold">{{ current_user.fecha_registro.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 text-muted">Estado:</div>
+                        <div class="col-8">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Activo
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cambiar Contraseña -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lock me-2"></i>
+                    Cambiar Contraseña
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('perfil') }}" id="cambiarContraseñaForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="contraseña_actual" class="form-label">
+                                <i class="fas fa-key me-1"></i>Contraseña Actual
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="contraseña_actual" 
+                                       name="contraseña_actual" 
+                                       required
+                                       placeholder="Ingresa tu contraseña actual">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        onclick="togglePassword('contraseña_actual')">
+                                    <i class="fas fa-eye" id="eye-contraseña_actual"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nueva_contraseña" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Nueva Contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="nueva_contraseña" 
+                                       name="nueva_contraseña" 
+                                       required
+                                       minlength="6"
+                                       placeholder="Mínimo 6 caracteres">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        onclick="togglePassword('nueva_contraseña')">
+                                    <i class="fas fa-eye" id="eye-nueva_contraseña"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                La contraseña debe tener al menos 6 caracteres
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmar_contraseña" class="form-label">
+                                <i class="fas fa-check-double me-1"></i>Confirmar Nueva Contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="confirmar_contraseña" 
+                                       name="confirmar_contraseña" 
+                                       required
+                                       placeholder="Repite la nueva contraseña">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        onclick="togglePassword('confirmar_contraseña')">
+                                    <i class="fas fa-eye" id="eye-confirmar_contraseña"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary me-md-2" onclick="limpiarFormulario()">
+                                    <i class="fas fa-eraser me-2"></i>Limpiar
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Cambiar Contraseña
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Consejos de Seguridad -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Consejos de Seguridad
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Usa contraseñas de al menos 8 caracteres
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Combina letras, números y símbolos
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Evita información personal obvia
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Cambia tu contraseña regularmente
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Función para mostrar/ocultar contraseñas
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const eyeIcon = document.getElementById('eye-' + inputId);
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+// Función para limpiar el formulario
+function limpiarFormulario() {
+    document.getElementById('cambiarContraseñaForm').reset();
+    
+    // Ocultar todas las contraseñas
+    const inputs = ['contraseña_actual', 'nueva_contraseña', 'confirmar_contraseña'];
+    inputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        const eyeIcon = document.getElementById('eye-' + inputId);
+        input.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    });
+}
+
+// Validación en tiempo real
+document.getElementById('nueva_contraseña').addEventListener('input', function() {
+    const password = this.value;
+    const confirmPassword = document.getElementById('confirmar_contraseña').value;
+    
+    if (password.length < 6) {
+        this.setCustomValidity('La contraseña debe tener al menos 6 caracteres');
+    } else if (confirmPassword && password !== confirmPassword) {
+        this.setCustomValidity('Las contraseñas no coinciden');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('confirmar_contraseña').addEventListener('input', function() {
+    const password = document.getElementById('nueva_contraseña').value;
+    const confirmPassword = this.value;
+    
+    if (password !== confirmPassword) {
+        this.setCustomValidity('Las contraseñas no coinciden');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Confirmar antes de enviar
+document.getElementById('cambiarContraseñaForm').addEventListener('submit', function(e) {
+    const nuevaPassword = document.getElementById('nueva_contraseña').value;
+    const confirmPassword = document.getElementById('confirmar_contraseña').value;
+    
+    if (nuevaPassword !== confirmPassword) {
+        e.preventDefault();
+        alert('❌ Las contraseñas no coinciden. Por favor, verifica.');
+        return false;
+    }
+    
+    if (nuevaPassword.length < 6) {
+        e.preventDefault();
+        alert('❌ La nueva contraseña debe tener al menos 6 caracteres.');
+        return false;
+    }
+    
+    return confirm('¿Estás seguro de que quieres cambiar tu contraseña?');
+});
+</script>
+{% endblock %}

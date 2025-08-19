@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            Dashboard
+        </h1>
+        <p class="lead text-muted">Resumen general de tu inventario de cuentas de streaming</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card text-center">
+            <div class="stats-number">{{ total_cuentas }}</div>
+            <div class="stats-label">Total de Cuentas</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <div class="stats-number">{{ cuentas_disponibles }}</div>
+            <div class="stats-label">Disponibles</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <div class="stats-number">{{ cuentas_vendidas }}</div>
+            <div class="stats-label">Vendidas</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card text-center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+            <div class="stats-number">${{ "%.2f"|format(valor_total) }}</div>
+            <div class="stats-label">Valor del Inventario</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Additional Info -->
+<div class="row">
+    <!-- Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Distribución por Plataforma
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="plataformasChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('nueva_cuenta') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Agregar Cuenta
+                    </a>
+                    <a href="{{ url_for('listar_cuentas') }}" class="btn btn-success">
+                        <i class="fas fa-list me-2"></i>
+                        Ver Todas las Cuentas
+                    </a>
+                    <a href="{{ url_for('listar_cuentas', estado='disponible') }}" class="btn btn-info">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Solo Disponibles
+                    </a>
+                    <a href="https://gestor-de-cuentas-hplay.onrender.com/dashboard" target="_blank" class="btn btn-warning">
+                        <i class="fas fa-external-link-alt me-2"></i>
+                        Dashboard Externo
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres cerrar sesión?')">
+                        <i class="fas fa-sign-out-alt me-2"></i>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Accounts -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Últimas Cuentas Agregadas
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ultimas_cuentas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Plataforma</th>
+                                    <th>Email</th>
+                                    <th>Precio</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cuenta in ultimas_cuentas %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-tv me-2"></i>
+                                        {{ cuenta.plataforma }}
+                                    </td>
+                                    <td>
+                                        <code>{{ cuenta.email }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                onclick="copyToClipboard('{{ cuenta.email }}')"
+                                                title="Copiar email">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">${{ "%.2f"|format(cuenta.precio) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if cuenta.estado == 'disponible' %}
+                                            <span class="badge badge-disponible">
+                                                <i class="fas fa-check me-1"></i>Disponible
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-vendida">
+                                                <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No hay cuentas en el inventario</p>
+                        <a href="{{ url_for('nueva_cuenta') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Agregar Primera Cuenta
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Platform Distribution -->
+{% if plataformas %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>
+                    Cuentas por Plataforma
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for plataforma in plataformas %}
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="text-center p-3 border rounded">
+                            <h4 class="text-primary">{{ plataforma.cantidad }}</h4>
+                            <p class="mb-0 text-muted">{{ plataforma.plataforma }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Chart.js configuration
+const ctx = document.getElementById('plataformasChart').getContext('2d');
+
+{% if plataformas %}
+const plataformasData = {
+    labels: [{% for p in plataformas %}'{{ p.plataforma }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+    datasets: [{
+        data: [{% for p in plataformas %}{{ p.cantidad }}{% if not loop.last %}, {% endif %}{% endfor %}],
+        backgroundColor: [
+            '#6366f1',
+            '#8b5cf6',
+            '#10b981',
+            '#f59e0b',
+            '#ef4444',
+            '#3b82f6',
+            '#ec4899',
+            '#06b6d4'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: plataformasData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true
+        }
+    }
+});
+{% else %}
+// Show message when no data
+ctx.font = '16px Arial';
+ctx.fillStyle = '#6b7280';
+ctx.textAlign = 'center';
+ctx.fillText('No hay datos para mostrar', 200, 100);
+{% endif %}
+
+// Auto-refresh statistics every 30 seconds
+setInterval(function() {
+    fetch('/api/estadisticas')
+        .then(response => response.json())
+        .then(data => {
+            // Update statistics (you can implement this if needed)
+            console.log('Statistics updated:', data);
+        })
+        .catch(error => console.error('Error updating statistics:', error));
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cuenta.plataforma }} - {{ cuenta.email }} - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-eye me-2"></i>
+                    Detalles de la Cuenta
+                </h1>
+                <p class="lead text-muted">Información completa de la cuenta seleccionada</p>
+            </div>
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver
+                </a>
+                {% if current_user.es_admin %}
+                <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Account Information -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información de la Cuenta
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Plataforma</label>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tv text-primary me-2"></i>
+                            <span class="fs-5">{{ cuenta.plataforma }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Estado</label>
+                        <div>
+                            {% if cuenta.estado == 'disponible' %}
+                                <span class="badge badge-disponible fs-6">
+                                    <i class="fas fa-check me-1"></i>Disponible
+                                </span>
+                            {% else %}
+                                <span class="badge badge-vendida fs-6">
+                                    <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Email</label>
+                        <div class="d-flex align-items-center">
+                            <code class="fs-6 me-2">{{ cuenta.email }}</code>
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="copyToClipboard('{{ cuenta.email }}')"
+                                    title="Copiar email">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Contraseña</label>
+                        <div class="d-flex align-items-center">
+                            <input type="password" class="form-control-plaintext me-2" 
+                                   id="passwordDisplay" value="{{ cuenta.password }}" readonly>
+                            <button class="btn btn-sm btn-outline-primary me-2" 
+                                    onclick="togglePasswordDisplay()"
+                                    title="Mostrar/Ocultar contraseña">
+                                <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" 
+                                    onclick="copyToClipboard('{{ cuenta.password }}')"
+                                    title="Copiar contraseña">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Precio</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success fs-5">${{ "%.2f"|format(cuenta.precio) }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha de Compra</label>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar text-info me-2"></i>
+                            <span>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if cuenta.fecha_venta %}
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha de Venta</label>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar-check text-success me-2"></i>
+                            <span>{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if cuenta.notas %}
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Notas</label>
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-sticky-note text-warning me-2"></i>
+                            {{ cuenta.notas }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">ID de la Cuenta</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-secondary fs-6">#{{ cuenta.id }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha de Creación</label>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock text-muted me-2"></i>
+                            <span>{{ cuenta.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions and Status -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Acciones
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if current_user.es_admin %}
+                        {% if cuenta.estado == 'disponible' %}
+                            <form method="POST" action="{{ url_for('vender_cuenta', id=cuenta.id) }}" 
+                                  onsubmit="return confirm('¿Estás seguro de que quieres marcar esta cuenta como vendida?')">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-dollar-sign me-2"></i>
+                                    Marcar como Vendida
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Esta cuenta ya fue vendida
+                            </div>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>
+                            Editar Cuenta
+                        </a>
+                        
+                        <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
+                              onsubmit="return confirmDelete('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer.')">
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-trash me-2"></i>
+                                Eliminar Cuenta
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Usuario Normal</strong><br>
+                            Solo puedes ver y agregar cuentas
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Información Rápida
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ cuenta.precio|round(2) }}</h4>
+                        <small class="text-muted">Precio</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-{% if cuenta.estado == 'disponible' %}success{% else %}warning{% endif %}">
+                            {{ cuenta.estado|title }}
+                        </h4>
+                        <small class="text-muted">Estado</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-link me-2"></i>
+                    Acciones Relacionadas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="{{ url_for('listar_cuentas', plataforma=cuenta.plataforma) }}" 
+                           class="btn btn-outline-primary w-100">
+                            <i class="fas fa-tv me-2"></i>
+                            Ver más cuentas de {{ cuenta.plataforma }}
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('listar_cuentas', estado=cuenta.estado) }}" 
+                           class="btn btn-outline-info w-100">
+                            <i class="fas fa-filter me-2"></i>
+                            Ver cuentas {{ cuenta.estado }}s
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('nueva_cuenta') }}" 
+                           class="btn btn-outline-success w-100">
+                            <i class="fas fa-plus me-2"></i>
+                            Agregar nueva cuenta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Toggle password visibility
+function togglePasswordDisplay() {
+    const passwordInput = document.getElementById('passwordDisplay');
+    const toggleIcon = document.getElementById('passwordToggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Enhanced copy to clipboard with better feedback
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success toast
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed top-0 end-0 p-3';
+        toast.style.zIndex = '1050';
+        toast.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <strong class="me-auto">¡Copiado!</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${text.length > 30 ? text.substring(0, 30) + '...' : text} copiado al portapapeles
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 3000);
+    }).catch(function(err) {
+        console.error('Error al copiar: ', err);
+        alert('Error al copiar al portapapeles');
+    });
+}
+
+// Auto-hide password after 30 seconds for security
+setTimeout(function() {
+    const passwordInput = document.getElementById('passwordDisplay');
+    if (passwordInput && passwordInput.type === 'text') {
+        passwordInput.type = 'password';
+        const toggleIcon = document.getElementById('passwordToggleIcon');
+        if (toggleIcon) {
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+}, 30000);
+</script>
+{% endblock %}
