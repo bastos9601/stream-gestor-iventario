@@ -1,0 +1,65 @@
+{
+  "packageId": "com.gestorstreaming.app",
+  "host": "gestor-cuentas-streaming.onrender.com",
+  "name": "Gestor de Cuentas de Streaming",
+  "launcherName": "Gestor Streaming",
+  "display": "standalone",
+  "themeColor": "#0d6efd",
+  "navigationColor": "#ffffff",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/icon-512x512.png",
+  "maskableIconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/icon-512x512.png",
+  "monochromeIconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/icon-512x512.png",
+  "shortcuts": [
+    {
+      "name": "Nueva Cuenta",
+      "shortName": "Agregar",
+      "url": "/cuentas/nueva",
+      "chosenIconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/add-account.png"
+    },
+    {
+      "name": "Ver Cuentas",
+      "shortName": "Listar",
+      "url": "/cuentas",
+      "chosenIconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/list-accounts.png"
+    }
+  ],
+  "shareTarget": {
+    "action": "/cuentas/nueva",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "es",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    }
+  },
+  "alphaDirection": "ltr",
+  "enableSiteSettingsShortcut": true,
+  "isMetaData": false,
+  "shortcuts": [
+    {
+      "name": "Nueva Cuenta",
+      "shortName": "Agregar",
+      "url": "/cuentas/nueva",
+      "chosenIconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/add-account.png"
+    },
+    {
+      "name": "Ver Cuentas",
+      "shortName": "Listar",
+      "url": "/cuentas",
+      "chosenIconUrl": "https://gestor-cuentas-streaming.onrender.com/static/icons/list-accounts.png"
+    }
+  ]
+}

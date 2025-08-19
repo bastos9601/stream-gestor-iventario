@@ -1,0 +1,122 @@
+{
+  "name": "Gestor de Cuentas de Streaming",
+  "short_name": "Gestor Streaming",
+  "description": "Sistema completo para gestionar inventario de cuentas de streaming",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6efd",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/static/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/static/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/screenshots/login.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/static/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nueva Cuenta",
+      "short_name": "Agregar",
+      "description": "Agregar nueva cuenta de streaming",
+      "url": "/cuentas/nueva",
+      "icons": [
+        {
+          "src": "/static/icons/add-account.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Ver Cuentas",
+      "short_name": "Listar",
+      "description": "Ver todas las cuentas",
+      "url": "/cuentas",
+      "icons": [
+        {
+          "src": "/static/icons/list-accounts.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "pwa_builder": {
+    "packageId": "com.gestorstreaming.app",
+    "host": "gestor-cuentas-streaming.onrender.com",
+    "launcherName": "Gestor Streaming",
+    "enableNotifications": true,
+    "fallbackType": "customtabs",
+    "features": {
+      "locationDelegation": {
+        "enabled": false
+      }
+    },
+    "alphaDirection": "ltr",
+    "enableSiteSettingsShortcut": true
+  }
+}

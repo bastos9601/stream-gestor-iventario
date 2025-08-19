@@ -400,6 +400,12 @@ def eliminar_usuario(id):
     
     return redirect(url_for('listar_usuarios'))
 
+@app.route('/apk')
+@login_required
+def apk():
+    """Página para crear APK de la aplicación"""
+    return render_template('apk.html')
+
 @app.route('/api/cuentas')
 @login_required
 def api_cuentas():

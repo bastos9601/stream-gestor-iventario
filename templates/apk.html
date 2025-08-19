@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Crear APK - Gestor de Cuentas de Streaming{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    Crear APK para Android
+                </h1>
+                <p class="lead text-muted">Convierte tu aplicación web en una APK instalable</p>
+            </div>
+            <div id="installStatus">
+                <span class="badge bg-secondary">Verificando...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    Instrucciones para Crear APK
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-1 me-2"></i>
+                            Método 1: PWA Builder (Recomendado)
+                        </h6>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item">
+                                <strong>Ve a</strong> <a href="https://www.pwabuilder.com/" target="_blank">PWA Builder</a>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Pega la URL:</strong> <code>https://gestor-cuentas-streaming.onrender.com</code>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Haz clic en "Build My PWA"</strong>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Descarga el APK</strong> para Android
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-success">
+                            <i class="fas fa-2 me-2"></i>
+                            Método 2: Bubblewrap (TWA)
+                        </h6>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item">
+                                <strong>Instala Node.js</strong> en tu computadora
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Ejecuta:</strong> <code>npm install -g @bubblewrap/cli</code>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Configura:</strong> <code>bubblewrap init --manifest https://gestor-cuentas-streaming.onrender.com/static/manifest.json</code>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Construye:</strong> <code>bubblewrap build</code>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-download me-2"></i>
+                    Descargar APK Directo
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Una vez que hayas generado el APK, puedes compartirlo directamente:
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-primary" onclick="alert('Primero genera el APK usando uno de los métodos anteriores')">
+                        <i class="fas fa-download me-2"></i>
+                        Descargar APK
+                    </a>
+                    <button class="btn btn-outline-primary" onclick="copyToClipboard('https://gestor-cuentas-streaming.onrender.com')">
+                        <i class="fas fa-copy me-2"></i>
+                        Copiar URL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    Instalar en Android
+                </h6>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item">
+                        <strong>Habilita "Fuentes desconocidas"</strong> en Configuración > Seguridad
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Descarga el APK</strong> en tu dispositivo
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Abre el archivo APK</strong> y sigue las instrucciones
+                    </li>
+                    <li class="list-group-item">
+                        <strong>¡Listo!</strong> La app aparecerá en tu pantalla de inicio
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Características de la APK
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Funcionalidades Completas
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Sistema de login completo</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Gestión de cuentas</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Dashboard con estadísticas</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Gestión de usuarios</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Interfaz responsive</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-star me-2"></i>
+                            Experiencia Nativa
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Icono en pantalla de inicio</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Funciona offline</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Notificaciones push</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Acceso rápido desde app drawer</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Actualizaciones automáticas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Notas Importantes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Importante:</strong> Para que la APK funcione correctamente, tu aplicación debe estar desplegada en Render y ser accesible desde internet.
+                </div>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-link me-2 text-primary"></i>
+                        <strong>URL de producción:</strong> <code>https://gestor-cuentas-streaming.onrender.com</code>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-shield-alt me-2 text-success"></i>
+                        <strong>HTTPS:</strong> Requerido para PWA y APK
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-mobile-alt me-2 text-info"></i>
+                        <strong>Dispositivos:</strong> Android 5.0+ (API 21+)
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-sync me-2 text-warning"></i>
+                        <strong>Actualizaciones:</strong> Automáticas desde el servidor
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Función para copiar URL al portapapeles
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Mostrar mensaje de éxito
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed top-0 end-0 p-3';
+        toast.style.zIndex = '1050';
+        toast.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <strong class="me-auto">¡Copiado!</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    URL copiada al portapapeles
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 3000);
+    }).catch(function(err) {
+        console.error('Error al copiar: ', err);
+        alert('Error al copiar al portapapeles');
+    });
+}
+
+// Función para verificar si la app está instalada
+function checkIfInstalled() {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        document.getElementById('installStatus').innerHTML = 
+            '<span class="badge bg-success"><i class="fas fa-check me-2"></i>App Instalada</span>';
+    } else {
+        document.getElementById('installStatus').innerHTML = 
+            '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-2"></i>App No Instalada</span>';
+    }
+}
+
+// Verificar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    checkIfInstalled();
+});
+</script>
+{% endblock %}
