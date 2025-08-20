@@ -86,7 +86,17 @@
                 </h5>
             </div>
             <div class="card-body">
-                <canvas id="plataformasChart" width="400" height="200"></canvas>
+                {% if plataformas %}
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="plataformasChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No hay datos de plataformas para mostrar</p>
+                        <small class="text-muted">Agrega algunas cuentas para ver la distribución</small>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -302,56 +312,67 @@
 {% block scripts %}
 <script>
 // Chart.js configuration
-const ctx = document.getElementById('plataformasChart').getContext('2d');
+document.addEventListener('DOMContentLoaded', function() {
+    const chartCanvas = document.getElementById('plataformasChart');
+    
+    {% if plataformas %}
+    if (chartCanvas) {
+        const ctx = chartCanvas.getContext('2d');
+        
+        const plataformasData = {
+            labels: [{% for p in plataformas %}'{{ p.plataforma }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for p in plataformas %}{{ p.cantidad }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#6366f1',
+                    '#8b5cf6',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#3b82f6',
+                    '#ec4899',
+                    '#06b6d4'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        };
 
-{% if plataformas %}
-const plataformasData = {
-    labels: [{% for p in plataformas %}'{{ p.plataforma }}'{% if not loop.last %}, {% endif %}{% endfor %}],
-    datasets: [{
-        data: [{% for p in plataformas %}{{ p.cantidad }}{% if not loop.last %}, {% endif %}{% endfor %}],
-        backgroundColor: [
-            '#6366f1',
-            '#8b5cf6',
-            '#10b981',
-            '#f59e0b',
-            '#ef4444',
-            '#3b82f6',
-            '#ec4899',
-            '#06b6d4'
-        ],
-        borderWidth: 2,
-        borderColor: '#fff'
-    }]
-};
-
-new Chart(ctx, {
-    type: 'doughnut',
-    data: plataformasData,
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 20,
-                    usePointStyle: true
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: plataformasData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
                 }
             }
-        },
-        animation: {
-            animateScale: true,
-            animateRotate: true
-        }
+        });
     }
+    {% endif %}
 });
-{% else %}
-// Show message when no data
-ctx.font = '16px Arial';
-ctx.fillStyle = '#6b7280';
-ctx.textAlign = 'center';
-ctx.fillText('No hay datos para mostrar', 200, 100);
-{% endif %}
 
 // Copy to clipboard function
 function copyToClipboard(text) {
