@@ -289,7 +289,7 @@
     </div>
 </div>
 
-<!-- Modal para Marcar como Vendida - PERSONALIZADO -->
+<!-- Modal para Marcar como Vendida - PERSONALIZADO Y RESPONSIVE -->
 <div id="modalVenta" class="modal-personalizado" style="display: none;">
     <div class="modal-overlay" onclick="cerrarModal()"></div>
     <div class="modal-contenido">
@@ -305,8 +305,9 @@
         
         <form method="POST" action="{{ url_for('vender_cuenta', id=cuenta.id) }}" id="formVenta">
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
+                <!-- Campos del formulario - Responsive -->
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6">
                         <div class="mb-3">
                             <label for="nombre_comprador" class="form-label fw-bold">
                                 <i class="fas fa-user me-2 text-primary"></i>
@@ -319,7 +320,7 @@
                         </div>
                     </div>
                     
-                    <div class="col-md-6">
+                    <div class="col-12 col-sm-6">
                         <div class="mb-3">
                             <label for="whatsapp_comprador" class="form-label fw-bold">
                                 <i class="fab fa-whatsapp me-2 text-success"></i>
@@ -351,37 +352,73 @@
                     </div>
                 </div>
                 
-                <div class="alert alert-info border-0">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <strong><i class="fas fa-tv me-2"></i>Plataforma:</strong><br>
-                            <span class="badge bg-primary fs-6">{{ cuenta.plataforma }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <strong><i class="fas fa-envelope me-2"></i>Email:</strong><br>
-                            <code class="fs-6">{{ cuenta.email }}</code>
-                        </div>
-                        <div class="col-md-4">
-                            <strong><i class="fas fa-calendar me-2"></i>Fecha de Creación:</strong><br>
-                            <span class="badge bg-info fs-6">{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</span>
+                                    <!-- Información de la cuenta - Responsive -->
+                    <div class="alert alert-info border-0">
+                        <div class="row g-2">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-tv me-2"></i>Plataforma:</strong><br>
+                                <span class="badge bg-primary fs-6">{{ cuenta.plataforma }}</span>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-envelope me-2"></i>Email:</strong><br>
+                                <code class="fs-6 text-break">{{ cuenta.email }}</code>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-calendar me-2"></i>Fecha de Creación:</strong><br>
+                                <span class="badge bg-info fs-6">{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Mensaje de estado de la venta -->
+                    <div id="estadoVenta" class="alert alert-warning border-0" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="mensajeEstado">Completa todos los campos para continuar</span>
+                        </div>
+                    </div>
+
+                    <!-- Información del Comprador (se muestra después de confirmar la venta) -->
+                    <div id="infoComprador" class="alert alert-success border-0" style="display: none;">
+                        <h6 class="text-dark mb-2">
+                            <i class="fas fa-user-check me-2"></i>Información del Comprador:
+                        </h6>
+                        <div class="bg-light p-3 rounded">
+                            <div class="mb-2">
+                                <strong>Nombre:</strong> <span id="nombreCompradorMostrado"></span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>WhatsApp:</strong> <span id="whatsappCompradorMostrado"></span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Vencimiento:</strong> <span id="fechaVencimientoMostrada"></span>
+                            </div>
+                        </div>
+                    </div>
             </div>
             
+            <!-- Footer del modal - Responsive -->
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-lg" onclick="cerrarModal()">
-                    <i class="fas fa-times me-2"></i>
-                    Cancelar
-                </button>
-                <button type="button" class="btn btn-whatsapp btn-lg me-2" onclick="enviarWhatsApp()">
-                    <i class="fab fa-whatsapp me-2"></i>
-                    Enviar a WhatsApp
-                </button>
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i class="fas fa-check me-2"></i>
-                    Confirmar Venta
-                </button>
+                <div class="d-grid gap-2 w-100">
+                    <!-- Botones en móvil: apilados verticalmente -->
+                    <div class="d-flex flex-column flex-sm-row gap-2 w-100">
+                        <button type="button" class="btn btn-secondary btn-lg flex-fill" onclick="cerrarModal()">
+                            <i class="fas fa-times me-2"></i>
+                            <span class="d-none d-sm-inline">Cancelar</span>
+                            <span class="d-sm-none">Cancelar</span>
+                        </button>
+                        <button type="button" class="btn btn-whatsapp btn-lg flex-fill" onclick="enviarWhatsApp()">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            <span class="d-none d-sm-inline">Enviar a WhatsApp</span>
+                            <span class="d-sm-none">WhatsApp</span>
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg flex-fill">
+                            <i class="fas fa-check me-2"></i>
+                            <span class="d-none d-sm-inline">Confirmar Venta</span>
+                            <span class="d-sm-none">Confirmar</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -393,7 +430,7 @@
 
 {% block scripts %}
 <style>
-/* CSS para Modal Personalizado */
+/* CSS para Modal Personalizado - COMPLETAMENTE RESPONSIVE */
 .modal-personalizado {
     position: fixed;
     top: 0;
@@ -404,6 +441,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
 }
 
 .modal-overlay {
@@ -421,11 +459,59 @@
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    width: 90%;
+    width: 100%;
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
     z-index: 2;
+    margin: auto;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 576px) {
+    .modal-personalizado {
+        padding: 0.5rem;
+    }
+    
+    .modal-contenido {
+        width: 100%;
+        max-height: 95vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .modal-header {
+        border-radius: 0;
+        padding: 0.75rem 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .modal-footer {
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* Responsive para pantallas medianas */
+@media (min-width: 577px) and (max-width: 768px) {
+    .modal-contenido {
+        width: 95%;
+        max-width: 600px;
+    }
+    
+    .modal-body {
+        padding: 1.25rem;
+    }
+}
+
+/* Responsive para pantallas grandes */
+@media (min-width: 769px) {
+    .modal-contenido {
+        width: 90%;
+        max-width: 800px;
+    }
 }
 
 .modal-header {
@@ -436,12 +522,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .modal-title {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
+    flex: 1;
+    min-width: 0;
 }
 
 .btn-cerrar {
@@ -456,6 +546,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .btn-cerrar:hover {
@@ -473,6 +564,55 @@
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
+}
+
+/* Responsive para el header del modal */
+@media (max-width: 576px) {
+    .modal-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    .btn-cerrar {
+        width: 28px;
+        height: 28px;
+        font-size: 1.25rem;
+    }
+}
+
+/* Responsive para el body del modal */
+@media (max-width: 576px) {
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .form-control-lg {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+    }
+}
+
+/* Responsive para el footer del modal */
+@media (max-width: 576px) {
+    .modal-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .modal-footer .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
 }
 
 /* Botón de WhatsApp */
@@ -517,6 +657,167 @@
 .modal-personalizado .btn {
     cursor: pointer !important;
 }
+
+/* Estilos responsive para elementos del formulario */
+@media (max-width: 576px) {
+    .modal-personalizado .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    
+    .modal-personalizado .col-12,
+    .modal-personalizado .col-sm-6,
+    .modal-personalizado .col-md-4 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .modal-personalizado .alert {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .modal-personalizado .badge {
+        font-size: 0.75rem !important;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .modal-personalizado code {
+        font-size: 0.75rem !important;
+        word-break: break-all;
+    }
+}
+
+/* Estilos responsive para pantallas medianas */
+@media (min-width: 577px) and (max-width: 768px) {
+    .modal-personalizado .alert {
+        padding: 1rem;
+    }
+    
+    .modal-personalizado .badge {
+        font-size: 0.85rem !important;
+    }
+    
+    .modal-personalizado code {
+        font-size: 0.85rem !important;
+    }
+}
+
+/* Mejoras para pantallas táctiles */
+@media (hover: none) and (pointer: coarse) {
+    .modal-personalizado .btn {
+        min-height: 44px;
+    }
+    
+    .modal-personalizado .form-control {
+        min-height: 44px;
+    }
+    
+    .modal-personalizado .btn-cerrar {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* Estilos para mejorar la legibilidad en pantallas pequeñas */
+@media (max-width: 576px) {
+    .modal-personalizado .form-label {
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-personalizado .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .modal-personalizado .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Mejorar espaciado entre elementos */
+    .modal-personalizado .row.g-3 > * {
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-personalizado .row.g-3 > *:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Estilos para pantallas muy pequeñas (smartphones pequeños) */
+@media (max-width: 375px) {
+    .modal-personalizado {
+        padding: 0.25rem;
+    }
+    
+    .modal-contenido {
+        max-height: 98vh;
+    }
+    
+    .modal-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .modal-body {
+        padding: 0.75rem;
+    }
+    
+    .modal-footer {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .modal-title {
+        font-size: 1rem;
+    }
+    
+    .form-control-lg {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem;
+    }
+}
+
+        /* Estilos para pantallas de alta densidad (retina) */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .modal-personalizado .btn,
+            .modal-personalizado .form-control {
+                border-width: 0.5px;
+            }
+        }
+
+        /* Estilos para validación del formulario */
+        .form-control.is-valid {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .form-control.is-valid:focus {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+        }
+
+        .form-control.is-invalid:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        /* Indicadores de validación */
+        .form-control.is-valid {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .form-control.is-invalid {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4M7.2 4.6l-1.4 1.4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
 </style>
 
 <script>
@@ -563,31 +864,159 @@ function copyToClipboard(text) {
     });
 }
 
-// Función para abrir modal de venta
-function abrirModalVenta() {
-    // Establecer fecha mínima como hoy
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fecha_vencimiento').min = today;
-    
-    // Mostrar modal personalizado
-    document.getElementById('modalVenta').style.display = 'block';
-    document.body.style.overflow = 'hidden'; // Evitar scroll
-}
+        // Función para abrir modal de venta
+        function abrirModalVenta() {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (!modal) {
+                    console.error('Modal no encontrado');
+                    return;
+                }
+                
+                // Establecer fecha mínima como hoy
+                const fechaInput = document.getElementById('fecha_vencimiento');
+                if (fechaInput) {
+                    const today = new Date().toISOString().split('T')[0];
+                    fechaInput.min = today;
+                }
+                
+                // Mostrar modal personalizado
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Evitar scroll
+                
+                // Mostrar estado inicial (con verificación)
+                try {
+                    updateVentaStatus();
+                } catch (error) {
+                    console.warn('Error al actualizar estado de venta:', error);
+                }
+                
+                // Enfoque en el primer campo en dispositivos móviles
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        try {
+                            const primerCampo = document.getElementById('nombre_comprador');
+                            if (primerCampo) {
+                                primerCampo.focus();
+                                // Scroll suave al modal en móviles
+                                primerCampo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        } catch (error) {
+                            console.warn('Error al enfocar campo:', error);
+                        }
+                    }, 100);
+                }
+                
+                // Agregar listener para tecla Escape
+                document.addEventListener('keydown', handleEscapeKey);
+                
+            } catch (error) {
+                console.error('Error al abrir modal:', error);
+            }
+        }
 
-// Función para cerrar modal personalizado
-function cerrarModal() {
-    document.getElementById('modalVenta').style.display = 'none';
-    document.body.style.overflow = ''; // Restaurar scroll
+        // Función para cerrar modal personalizado
+        function cerrarModal() {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+                
+                document.body.style.overflow = ''; // Restaurar scroll
+                
+                // Remover listener de tecla Escape
+                document.removeEventListener('keydown', handleEscapeKey);
+                
+                // Limpiar formulario
+                const form = document.getElementById('formVenta');
+                if (form) {
+                    form.reset();
+                }
+                
+                // Limpiar clases de validación
+                try {
+                    const inputs = document.querySelectorAll('#modalVenta .form-control');
+                    if (inputs.length > 0) {
+                        inputs.forEach(input => {
+                            try {
+                                input.classList.remove('is-valid', 'is-invalid');
+                                input.disabled = false;
+                                input.classList.remove('bg-light');
+                            } catch (inputError) {
+                                console.warn('Error al limpiar input:', inputError);
+                            }
+                        });
+                    }
+                } catch (inputsError) {
+                    console.warn('Error al procesar inputs:', inputsError);
+                }
+                
+                // Ocultar mensaje de estado
+                const estadoDiv = document.getElementById('estadoVenta');
+                if (estadoDiv) {
+                    estadoDiv.style.display = 'none';
+                }
+                
+                // Ocultar información del comprador
+                const infoComprador = document.getElementById('infoComprador');
+                if (infoComprador) {
+                    infoComprador.style.display = 'none';
+                }
+                
+                // Restaurar botones originales
+                const botonesAntes = document.getElementById('botonesAntesVenta');
+                const botonesDespues = document.getElementById('botonesDespuesVenta');
+                
+                if (botonesAntes) {
+                    botonesAntes.style.display = 'block';
+                }
+                
+                if (botonesDespues) {
+                    botonesDespues.style.display = 'none';
+                }
+                
+                // Remover mensaje de éxito si existe
+                try {
+                    const mensajeExito = document.querySelector('.modal-body .alert-success');
+                    if (mensajeExito) {
+                        mensajeExito.remove();
+                    }
+                } catch (mensajeError) {
+                    console.warn('Error al remover mensaje:', mensajeError);
+                }
+                
+            } catch (error) {
+                console.error('Error al cerrar modal:', error);
+            }
+        }
+
+// Función para manejar tecla Escape
+function handleEscapeKey(event) {
+    try {
+        if (event.key === 'Escape') {
+            cerrarModal();
+        }
+    } catch (error) {
+        console.error('Error al manejar tecla Escape:', error);
+    }
 }
 
 // Función para enviar a WhatsApp
 function enviarWhatsApp() {
-    const nombre = document.getElementById('nombre_comprador').value;
-    const whatsapp = document.getElementById('whatsapp_comprador').value;
+    const nombre = document.getElementById('nombre_comprador').value.trim();
+    const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
     const fechaVencimiento = document.getElementById('fecha_vencimiento').value;
     
+    // Validar que los campos estén completos
     if (!nombre || !whatsapp || !fechaVencimiento) {
-        alert('Por favor completa todos los campos requeridos');
+        alert('Por favor completa todos los campos requeridos antes de enviar a WhatsApp');
+        return;
+    }
+    
+    // Validar formato de WhatsApp
+    if (!whatsapp.startsWith('+')) {
+        alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
         return;
     }
     
@@ -621,7 +1050,7 @@ Si tienes alguna pregunta, no dudes en contactarnos.`;
     window.open(urlWhatsApp, '_blank');
     
     // Mostrar confirmación
-    alert(`WhatsApp abierto para ${nombre}\nNúmero: ${whatsapp}\n\nEl mensaje ya está pre-formateado y listo para enviar.`);
+    alert(`📱 WhatsApp abierto para ${nombre}\nNúmero: ${whatsapp}\n\nEl mensaje ya está pre-formateado y listo para enviar.`);
 }
 
 // Función para copiar mensaje de WhatsApp (cuando la cuenta ya está vendida)
@@ -689,7 +1118,7 @@ function enviarWhatsAppComprador() {
     
     const mensaje = `¡Hola ${nombre}! 🎉
 
-📱 *Recordatorio de tu cuenta {{ cuenta.plataforma }}:*
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
 
 🏷️ *Plataforma:* {{ cuenta.plataforma }}
 📧 *Email:* {{ cuenta.email }}
@@ -744,7 +1173,40 @@ function recordarVencimiento() {
         return;
     }
     
-    const mensaje = `¡Hola ${nombre}! ⏰
+    // Función para convertir fecha de DD/MM/YYYY a YYYY-MM-DD
+    function convertirFecha(fechaString) {
+        if (!fechaString) return null;
+        
+        // Si ya está en formato YYYY-MM-DD, retornar igual
+        if (fechaString.includes('-')) {
+            return fechaString;
+        }
+        
+        // Convertir de DD/MM/YYYY a YYYY-MM-DD
+        const partes = fechaString.split('/');
+        if (partes.length === 3) {
+            const dia = partes[0].padStart(2, '0');
+            const mes = partes[1].padStart(2, '0');
+            const año = partes[2];
+            return `${año}-${mes}-${dia}`;
+        }
+        
+        return fechaString;
+    }
+    
+    // Calcular días que faltan para el vencimiento
+    console.log('Fecha original:', vencimiento);
+    const fechaConvertida = convertirFecha(vencimiento);
+    console.log('Fecha convertida:', fechaConvertida);
+    const fechaVencimiento = new Date(fechaConvertida);
+    console.log('Fecha objeto Date:', fechaVencimiento);
+    const fechaActual = new Date();
+    console.log('Fecha actual:', fechaActual);
+    
+    // Verificar que la fecha sea válida
+    if (isNaN(fechaVencimiento.getTime())) {
+        console.error('Fecha de vencimiento inválida:', vencimiento);
+        const mensaje = `¡Hola ${nombre}! 📅
 
 📱 *Recordatorio de vencimiento de tu cuenta {{ cuenta.plataforma }}:*
 
@@ -752,11 +1214,57 @@ function recordarVencimiento() {
 📧 *Email:* {{ cuenta.email }}
 📅 *Vencimiento:* ${vencimiento}
 
-⚠️ *Tu cuenta vence pronto*
+⚠️ *Error al calcular días restantes*
 
 📱 *ID de la cuenta:* #{{ cuenta.id }}
 
-¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
+🔄 ¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
+        
+        // Codificar el mensaje para URL
+        const mensajeCodificado = encodeURIComponent(mensaje);
+        
+        // Crear URL de WhatsApp
+        const numeroWhatsApp = whatsapp.replace('+', '');
+        const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+        
+        // Abrir WhatsApp en nueva pestaña
+        window.open(urlWhatsApp, '_blank');
+        return;
+    }
+    
+    const diferenciaTiempo = fechaVencimiento.getTime() - fechaActual.getTime();
+    const diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
+    
+    let mensajeVencimiento = '';
+    let emoji = '';
+    
+    if (diasRestantes < 0) {
+        mensajeVencimiento = `🚨 *Tu cuenta venció hace ${Math.abs(diasRestantes)} días*`;
+        emoji = '🚨';
+    } else if (diasRestantes === 0) {
+        mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} días (HOY)*`;
+        emoji = '📅';
+    } else if (diasRestantes === 1) {
+        mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} día (MAÑANA)*`;
+        emoji = '📅';
+    } else {
+        mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} días*`;
+        emoji = '📅';
+    }
+    
+    const mensaje = `¡Hola ${nombre}! ${emoji}
+
+📱 *Recordatorio de vencimiento de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+📅 *Vencimiento:* ${vencimiento}
+
+${mensajeVencimiento}
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+🔄 ¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
         
     // Codificar el mensaje para URL
     const mensajeCodificado = encodeURIComponent(mensaje);
@@ -776,54 +1284,813 @@ function confirmarEliminacion() {
     }
 }
 
-// Establecer fecha mínima para fecha de vencimiento
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date().toISOString().split('T')[0];
-    const fechaVencimiento = document.getElementById('fecha_vencimiento');
-    if (fechaVencimiento) {
-        fechaVencimiento.min = today;
+// Función para verificar que todos los elementos necesarios estén presentes
+function verificarElementosNecesarios() {
+    const elementosRequeridos = [
+        'modalVenta',
+        'formVenta',
+        'nombre_comprador',
+        'whatsapp_comprador',
+        'fecha_vencimiento',
+        'estadoVenta',
+        'mensajeEstado',
+        'botonesAntesVenta',
+        'botonesDespuesVenta'
+    ];
+    
+    const elementosFaltantes = [];
+    
+    elementosRequeridos.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (!elemento) {
+            elementosFaltantes.push(id);
+        }
+    });
+    
+    if (elementosFaltantes.length > 0) {
+        console.error('❌ Elementos faltantes en el modal:', elementosFaltantes);
+        return false;
     }
     
-    // Configurar formulario de venta
-    const formVenta = document.getElementById('formVenta');
-    if (formVenta) {
-        formVenta.addEventListener('submit', function(e) {
+    console.log('✅ Todos los elementos del modal están presentes');
+    return true;
+}
+
+// Establecer fecha mínima para fecha de vencimiento
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        console.log('🚀 Inicializando modal de venta...');
+        
+        // Verificar que todos los elementos estén presentes
+        if (verificarElementosNecesarios()) {
+            // Establecer fecha mínima
+            const today = new Date().toISOString().split('T')[0];
+            const fechaVencimiento = document.getElementById('fecha_vencimiento');
+            if (fechaVencimiento) {
+                fechaVencimiento.min = today;
+            }
+            
+            // Configurar formulario de venta
+            const formVenta = document.getElementById('formVenta');
+            if (formVenta) {
+                formVenta.addEventListener('submit', function(e) {
+                    try {
+                        const nombre = document.getElementById('nombre_comprador').value.trim();
+                        const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
+                        const fecha = document.getElementById('fecha_vencimiento').value;
+                        
+                        if (!nombre || !whatsapp || !fecha) {
+                            e.preventDefault();
+                            alert('Por favor completa todos los campos obligatorios');
+                            return false;
+                        }
+                        
+                        // Validar formato de WhatsApp (debe incluir + y código de país)
+                        if (!whatsapp.startsWith('+')) {
+                            e.preventDefault();
+                            alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
+                            return false;
+                        }
+                        
+                        // Validar que la fecha de vencimiento sea futura
+                        const fechaVencimiento = new Date(fecha);
+                        const hoy = new Date();
+                        if (fechaVencimiento <= hoy) {
+                            e.preventDefault();
+                            alert('La fecha de vencimiento debe ser futura');
+                            return false;
+                        }
+                        
+                        if (confirm('¿Estás seguro de que quieres marcar esta cuenta como vendida?')) {
+                            // Cerrar modal antes de enviar
+                            cerrarModal();
+                            return true;
+                        } else {
+                            e.preventDefault();
+                            return false;
+                        }
+                    } catch (error) {
+                        console.error('Error en validación del formulario:', error);
+                        e.preventDefault();
+                        alert('Error en la validación del formulario');
+                        return false;
+                    }
+                });
+            }
+            
+            // Funcionalidades responsive adicionales
+            setupResponsiveFeatures();
+            setupFormValidation();
+            
+            console.log('✅ Modal de venta inicializado correctamente');
+        } else {
+            console.error('❌ No se pudo inicializar el modal de venta - elementos faltantes');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error durante la inicialización del modal:', error);
+    }
+});
+
+// Configurar funcionalidades responsive
+function setupResponsiveFeatures() {
+    try {
+        // Detectar orientación del dispositivo
+        function handleOrientationChange() {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (modal && modal.style.display !== 'none') {
+                    // Reajustar modal cuando cambie la orientación
+                    setTimeout(() => {
+                        try {
+                            const modalContent = modal.querySelector('.modal-contenido');
+                            if (modalContent) {
+                                modalContent.scrollTop = 0;
+                            }
+                        } catch (contentError) {
+                            console.warn('Error al reajustar contenido del modal:', contentError);
+                        }
+                    }, 100);
+                }
+            } catch (orientationError) {
+                console.warn('Error al manejar cambio de orientación:', orientationError);
+            }
+        }
+        
+        // Listener para cambio de orientación
+        window.addEventListener('orientationchange', handleOrientationChange);
+        
+        // Listener para cambio de tamaño de ventana
+        window.addEventListener('resize', function() {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (modal && modal.style.display !== 'none') {
+                    // Reajustar modal en cambios de tamaño
+                    setTimeout(() => {
+                        try {
+                            const modalContent = modal.querySelector('.modal-contenido');
+                            if (modalContent) {
+                                // Asegurar que el modal esté centrado
+                                modalContent.style.margin = 'auto';
+                            }
+                        } catch (contentError) {
+                            console.warn('Error al reajustar contenido del modal en resize:', contentError);
+                        }
+                    }, 100);
+                }
+            } catch (resizeError) {
+                console.warn('Error al manejar cambio de tamaño:', resizeError);
+            }
+        });
+        
+        // Mejorar experiencia táctil en móviles
+        if ('ontouchstart' in window) {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (modal) {
+                    // Prevenir zoom en inputs en iOS
+                    const inputs = modal.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        try {
+                            input.addEventListener('focus', function() {
+                                this.style.fontSize = '16px'; // Prevenir zoom en iOS
+                            });
+                            
+                            input.addEventListener('blur', function() {
+                                this.style.fontSize = '';
+                            });
+                        } catch (inputError) {
+                            console.warn('Error al configurar input táctil:', inputError);
+                        }
+                    });
+                }
+            } catch (touchError) {
+                console.warn('Error al configurar funcionalidades táctiles:', touchError);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error al configurar funcionalidades responsive:', error);
+    }
+}
+
+// Configurar validación del formulario
+function setupFormValidation() {
+    const form = document.getElementById('formVenta');
+    if (!form) {
+        console.warn('Formulario de venta no encontrado');
+        return;
+    }
+    
+    const inputs = form.querySelectorAll('input[required]');
+    if (inputs.length === 0) {
+        console.warn('No se encontraron campos requeridos en el formulario');
+        return;
+    }
+    
+    // Validación en tiempo real
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateField(this);
+            updateVentaStatus();
+        });
+        
+        input.addEventListener('blur', function() {
+            validateField(this);
+            updateVentaStatus();
+        });
+    });
+    
+    // Validar fecha mínima
+    const fechaInput = document.getElementById('fecha_vencimiento');
+    if (fechaInput) {
+        const today = new Date().toISOString().split('T')[0];
+        fechaInput.min = today;
+        
+        fechaInput.addEventListener('change', function() {
+            validateDate(this);
+            updateVentaStatus();
+        });
+    }
+}
+
+// Validar campo individual
+function validateField(field) {
+    try {
+        if (!field) {
+            console.warn('Campo no válido para validar');
+            return false;
+        }
+        
+        const value = field.value.trim();
+        const isValid = value.length > 0;
+        
+        if (isValid) {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+        } else {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
+        }
+        
+        return isValid;
+    } catch (error) {
+        console.error('Error al validar campo:', error);
+        return false;
+    }
+}
+
+// Validar fecha
+function validateDate(field) {
+    try {
+        if (!field || !field.value) {
+            console.warn('Campo de fecha no válido');
+            return false;
+        }
+        
+        const selectedDate = new Date(field.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate <= today) {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
+            return false;
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error al validar fecha:', error);
+        return false;
+    }
+}
+
+        // Actualizar estado de la venta
+        function updateVentaStatus() {
+            try {
+                const nombreInput = document.getElementById('nombre_comprador');
+                const whatsappInput = document.getElementById('whatsapp_comprador');
+                const fechaInput = document.getElementById('fecha_vencimiento');
+                const estadoDiv = document.getElementById('estadoVenta');
+                const mensajeSpan = document.getElementById('mensajeEstado');
+                
+                if (!nombreInput || !whatsappInput || !fechaInput || !estadoDiv || !mensajeSpan) {
+                    console.warn('Elementos del formulario no encontrados:', {
+                        nombreInput: !!nombreInput,
+                        whatsappInput: !!whatsappInput,
+                        fechaInput: !!fechaInput,
+                        estadoDiv: !!estadoDiv,
+                        mensajeSpan: !!mensajeSpan
+                    });
+                    return;
+                }
+                
+                const nombre = nombreInput.value.trim();
+                const whatsapp = whatsappInput.value.trim();
+                const fecha = fechaInput.value;
+                
+                if (!nombre && !whatsapp && !fecha) {
+                    // No hay campos completados
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-warning border-0';
+                    mensajeSpan.innerHTML = '<i class="fas fa-info-circle me-2"></i>Completa todos los campos para continuar';
+                } else if (nombre && whatsapp && fecha) {
+                    // Todos los campos están completos
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-success border-0';
+                    mensajeSpan.innerHTML = '<i class="fas fa-check-circle me-2"></i>¡Formulario completo! Puedes confirmar la venta';
+                } else {
+                    // Algunos campos están completos
+                    const camposCompletados = [nombre, whatsapp, fecha].filter(Boolean).length;
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-info border-0';
+                    mensajeSpan.innerHTML = `<i class="fas fa-clock me-2"></i>${camposCompletados}/3 campos completados`;
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado de venta:', error);
+            }
+        }
+
+        // Función para confirmar la venta
+        function confirmarVenta() {
             const nombre = document.getElementById('nombre_comprador').value.trim();
             const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
             const fecha = document.getElementById('fecha_vencimiento').value;
             
+            // Validar campos obligatorios
             if (!nombre || !whatsapp || !fecha) {
-                e.preventDefault();
                 alert('Por favor completa todos los campos obligatorios');
-                return false;
+                return;
             }
             
-            // Validar formato de WhatsApp (debe incluir + y código de país)
+            // Validar formato de WhatsApp
             if (!whatsapp.startsWith('+')) {
-                e.preventDefault();
                 alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
-                return false;
+                return;
             }
             
-            // Validar que la fecha de vencimiento sea futura
+            // Validar fecha futura
             const fechaVencimiento = new Date(fecha);
             const hoy = new Date();
             if (fechaVencimiento <= hoy) {
-                e.preventDefault();
                 alert('La fecha de vencimiento debe ser futura');
-                return false;
+                return;
             }
             
-            if (confirm('¿Estás seguro de que quieres marcar esta cuenta como vendida?')) {
-                // Cerrar modal antes de enviar
-                cerrarModal();
-                return true;
-            } else {
-                e.preventDefault();
-                return false;
+            // Confirmar la venta
+            if (confirm('¿Estás seguro de que quieres confirmar esta venta?')) {
+                // Enviar formulario al servidor
+                const form = document.getElementById('formVenta');
+                const formData = new FormData(form);
+                
+                // Agregar datos adicionales
+                formData.append('nombre_comprador', nombre);
+                formData.append('whatsapp_comprador', whatsapp);
+                formData.append('fecha_vencimiento', fecha);
+                
+                // Enviar al servidor
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        // Si hay redirección, seguirla
+                        window.location.href = response.url;
+                    } else if (response.ok) {
+                        // Mostrar mensaje de éxito
+                        alert('¡Venta confirmada exitosamente!');
+                        
+                        // Recargar la página para mostrar datos actualizados
+                        window.location.reload();
+                    } else {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al confirmar la venta. Por favor, intenta de nuevo.');
+                });
             }
-        });
-    }
-});
+        }
+
+        // Función para mostrar información del comprador
+        function mostrarInfoComprador(nombre, whatsapp, fecha) {
+            const nombreElement = document.getElementById('nombreCompradorMostrado');
+            const whatsappElement = document.getElementById('whatsappCompradorMostrado');
+            const fechaElement = document.getElementById('fechaVencimientoMostrada');
+            const infoElement = document.getElementById('infoComprador');
+            
+            if (nombreElement) nombreElement.textContent = nombre;
+            if (whatsappElement) whatsappElement.textContent = whatsapp;
+            if (fechaElement) fechaElement.textContent = fecha;
+            if (infoElement) infoElement.style.display = 'block';
+        }
+
+        // Función para copiar mensaje de WhatsApp
+        function copiarMensajeWhatsApp() {
+            const nombre = document.getElementById('nombreCompradorMostrado').textContent;
+            const whatsapp = document.getElementById('whatsappCompradorMostrado').textContent;
+            const fechaVencimiento = document.getElementById('fechaVencimientoMostrada').textContent;
+            
+            const mensaje = `¡Hola! 🎉
+
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Fecha de Creación:* {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
+📅 *Vencimiento:* ${fechaVencimiento}
+
+✅ *Tu cuenta está lista para usar*
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+¡Disfruta de tu cuenta! 🎬
+
+Si tienes alguna pregunta, no dudes en contactarnos.`;
+            
+            navigator.clipboard.writeText(mensaje).then(function() {
+                // Mostrar notificación de éxito
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 end-0 p-3';
+                toast.style.zIndex = '1050';
+                toast.innerHTML = `
+                    <div class="toast show" role="alert">
+                        <div class="toast-header">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong class="me-auto">Copiado</strong>
+                            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.parentElement.remove()"></button>
+                        </div>
+                        <div class="toast-body">
+                            Mensaje de WhatsApp copiado al portapapeles
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }).catch(function() {
+                alert('Mensaje de WhatsApp copiado al portapapeles');
+            });
+        }
+
+        // Función para enviar WhatsApp al comprador
+        function enviarWhatsAppComprador() {
+            const nombre = document.getElementById('nombreCompradorMostrado').textContent;
+            const whatsapp = document.getElementById('whatsappCompradorMostrado').textContent;
+            const fechaVencimiento = document.getElementById('fechaVencimientoMostrada').textContent;
+            
+            const mensaje = `¡Hola ${nombre}! 🎉
+
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Vencimiento:* ${fechaVencimiento}
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+¡Disfruta de tu cuenta! 🎬
+
+Si tienes alguna pregunta, no dudes en contactarnos.`;
+            
+            // Codificar el mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Crear URL de WhatsApp
+            const numeroWhatsApp = whatsapp.replace('+', '');
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+            
+            // Abrir WhatsApp en nueva pestaña
+            window.open(urlWhatsApp, '_blank');
+            
+            // Mostrar confirmación
+            alert(`📱 WhatsApp abierto para ${nombre}\nNúmero: ${whatsapp}\n\nEl mensaje ya está pre-formateado y listo para enviar.`);
+        }
+
+        // Función para recordar vencimiento
+        function recordarVencimiento() {
+            const nombre = document.getElementById('nombreCompradorMostrado').textContent;
+            const whatsapp = document.getElementById('whatsappCompradorMostrado').textContent;
+            const fechaVencimiento = document.getElementById('fechaVencimientoMostrada').textContent;
+            
+            // Calcular días que faltan para el vencimiento
+            const fechaVenc = new Date(fechaVencimiento);
+            const fechaActual = new Date();
+            const diferenciaTiempo = fechaVenc.getTime() - fechaActual.getTime();
+            const diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
+            
+            let mensajeVencimiento = '';
+            let emoji = '';
+            
+            if (diasRestantes < 0) {
+                mensajeVencimiento = `🚨 *Tu cuenta venció hace ${Math.abs(diasRestantes)} días*`;
+                emoji = '🚨';
+            } else if (diasRestantes === 0) {
+                mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} días (HOY)*`;
+                emoji = '📅';
+            } else if (diasRestantes === 1) {
+                mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} día (MAÑANA)*`;
+                emoji = '📅';
+            } else {
+                mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} días*`;
+                emoji = '📅';
+            }
+            
+            const mensaje = `¡Hola ${nombre}! ${emoji}
+
+📱 *Recordatorio de vencimiento de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+📅 *Vencimiento:* ${fechaVencimiento}
+
+${mensajeVencimiento}
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+🔄 ¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
+            
+            // Codificar el mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Crear URL de WhatsApp
+            const numeroWhatsApp = whatsapp.replace('+', '');
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+            
+            // Abrir WhatsApp en nueva pestaña
+            window.open(urlWhatsApp, '_blank');
+            
+            // Mostrar confirmación
+            alert(`⏰ Recordatorio de vencimiento enviado a ${nombre}\nNúmero: ${whatsapp}`);
+        }
+
+        // Función para editar cuenta
+        function editarCuenta() {
+            // Redirigir a la página de editar cuenta
+            window.location.href = '{{ url_for("editar_cuenta", id=cuenta.id) }}';
+        }
+
+        // Función para eliminar cuenta
+        function eliminarCuenta() {
+            if (confirm('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer.')) {
+                // Redirigir a la función de eliminar cuenta
+                window.location.href = '{{ url_for("eliminar_cuenta", id=cuenta.id) }}';
+            }
+        }
+
+        // Función para copiar mensaje de WhatsApp (cuando la cuenta ya está vendida)
+        function copiarMensajeWhatsApp() {
+            const mensaje = `¡Hola! 🎉
+
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Fecha de Creación:* {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
+📅 *Vencimiento:* {{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') if cuenta.fecha_vencimiento else 'N/A' }}
+
+✅ *Tu cuenta está lista para usar*
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+¡Disfruta de tu cuenta! 🎬
+
+Si tienes alguna pregunta, no dudes en contactarnos.`;
+            
+            navigator.clipboard.writeText(mensaje).then(function() {
+                // Mostrar notificación de éxito
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 end-0 p-3';
+                toast.style.zIndex = '1050';
+                toast.innerHTML = `
+                    <div class="toast show" role="alert">
+                        <div class="toast-header">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong class="me-auto">Copiado</strong>
+                            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.parentElement.remove()"></button>
+                        </div>
+                        <div class="toast-body">
+                            Mensaje de WhatsApp copiado al portapapeles
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }).catch(function() {
+                // Fallback para navegadores que no soportan clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = mensaje;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Mensaje de WhatsApp copiado al portapapeles');
+            });
+        }
+
+        // Función para enviar WhatsApp al comprador (cuando la cuenta ya está vendida)
+        function enviarWhatsAppComprador() {
+            // Verificar si hay información del comprador disponible
+            const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
+            if (!compradorInfo) {
+                alert('No hay información del comprador disponible');
+                return;
+            }
+            
+            // Extraer información del comprador del DOM
+            const nombreElement = compradorInfo.querySelector('div:nth-child(1)');
+            const whatsappElement = compradorInfo.querySelector('div:nth-child(2)');
+            const vencimientoElement = compradorInfo.querySelector('div:nth-child(3)');
+            
+            if (!nombreElement || !whatsappElement || !vencimientoElement) {
+                alert('Información del comprador incompleta');
+                return;
+            }
+            
+            const nombre = nombreElement.textContent.replace('Nombre:', '').trim();
+            const whatsapp = whatsappElement.textContent.replace('WhatsApp:', '').trim();
+            const vencimiento = vencimientoElement.textContent.replace('Vencimiento:', '').trim();
+            
+            // Verificar que no sea N/A
+            if (nombre === 'N/A' || whatsapp === 'N/A' || vencimiento === 'N/A') {
+                alert('La información del comprador no está completa');
+                return;
+            }
+            
+            const mensaje = `¡Hola ${nombre}! 🎉
+
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Vencimiento:* ${vencimiento}
+
+✅ *Tu cuenta sigue activa*
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+¡Disfruta de tu cuenta! 🎬
+
+Si tienes alguna pregunta, no dudes en contactarnos.`;
+            
+            // Codificar el mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Crear URL de WhatsApp
+            const numeroWhatsApp = whatsapp.replace('+', '');
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+            
+            // Abrir WhatsApp en nueva pestaña
+            window.open(urlWhatsApp, '_blank');
+        }
+
+        // Función para recordar vencimiento (cuando la cuenta ya está vendida)
+        function recordarVencimiento() {
+            // Verificar si hay información del comprador disponible
+            const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
+            if (!compradorInfo) {
+                alert('No hay información del comprador disponible');
+                return;
+            }
+            
+            // Extraer información del comprador del DOM
+            const nombreElement = compradorInfo.querySelector('div:nth-child(1)');
+            const whatsappElement = compradorInfo.querySelector('div:nth-child(2)');
+            const vencimientoElement = compradorInfo.querySelector('div:nth-child(3)');
+            
+            if (!nombreElement || !whatsappElement || !vencimientoElement) {
+                alert('Información del comprador incompleta');
+                return;
+            }
+            
+            const nombre = nombreElement.textContent.replace('Nombre:', '').trim();
+            const whatsapp = whatsappElement.textContent.replace('WhatsApp:', '').trim();
+            const vencimiento = vencimientoElement.textContent.replace('Vencimiento:', '').trim();
+            
+            // Verificar que no sea N/A
+            if (nombre === 'N/A' || whatsapp === 'N/A' || vencimiento === 'N/A') {
+                alert('La información del comprador no está completa');
+                return;
+            }
+            
+            // Función para convertir fecha de DD/MM/YYYY a YYYY-MM-DD
+            function convertirFecha(fechaString) {
+                if (!fechaString) return null;
+                
+                // Si ya está en formato YYYY-MM-DD, retornar igual
+                if (fechaString.includes('-')) {
+                    return fechaString;
+                }
+                
+                // Convertir de DD/MM/YYYY a YYYY-MM-DD
+                const partes = fechaString.split('/');
+                if (partes.length === 3) {
+                    const dia = partes[0].padStart(2, '0');
+                    const mes = partes[1].padStart(2, '0');
+                    const año = partes[2];
+                    return `${año}-${mes}-${dia}`;
+                }
+                
+                return fechaString;
+            }
+            
+            // Calcular días que faltan para el vencimiento
+            console.log('Fecha original:', vencimiento);
+            const fechaConvertida = convertirFecha(vencimiento);
+            console.log('Fecha convertida:', fechaConvertida);
+            const fechaVenc = new Date(fechaConvertida);
+            console.log('Fecha objeto Date:', fechaVenc);
+            const fechaActual = new Date();
+            console.log('Fecha actual:', fechaActual);
+            
+            // Verificar que la fecha sea válida
+            if (isNaN(fechaVenc.getTime())) {
+                console.error('Fecha de vencimiento inválida:', vencimiento);
+                const mensaje = `¡Hola ${nombre}! 📅
+
+📱 *Recordatorio de vencimiento de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+📅 *Vencimiento:* ${vencimiento}
+
+⚠️ *Error al calcular días restantes*
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+🔄 ¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
+                
+                // Codificar el mensaje para URL
+                const mensajeCodificado = encodeURIComponent(mensaje);
+                
+                // Crear URL de WhatsApp
+                const numeroWhatsApp = whatsapp.replace('+', '');
+                const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+                
+                // Abrir WhatsApp en nueva pestaña
+                window.open(urlWhatsApp, '_blank');
+                return;
+            }
+            
+            const diferenciaTiempo = fechaVenc.getTime() - fechaActual.getTime();
+            const diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
+            
+            let mensajeVencimiento = '';
+            let emoji = '';
+            
+            if (diasRestantes < 0) {
+                mensajeVencimiento = `🚨 *Tu cuenta venció hace ${Math.abs(diasRestantes)} días*`;
+                emoji = '🚨';
+            } else if (diasRestantes === 0) {
+                mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} días (HOY)*`;
+                emoji = '📅';
+            } else if (diasRestantes === 1) {
+                mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} día (MAÑANA)*`;
+                emoji = '📅';
+            } else {
+                mensajeVencimiento = `📅 *Tu cuenta vence en ${diasRestantes} días*`;
+                emoji = '📅';
+            }
+            
+            const mensaje = `¡Hola ${nombre}! ${emoji}
+
+📱 *Recordatorio de vencimiento de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+📅 *Vencimiento:* ${vencimiento}
+
+${mensajeVencimiento}
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+🔄 ¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
+            
+            // Codificar el mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Crear URL de WhatsApp
+            const numeroWhatsApp = whatsapp.replace('+', '');
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+            
+            // Abrir WhatsApp en nueva pestaña
+            window.open(urlWhatsApp, '_blank');
+            
+            // Mostrar confirmación
+            alert(`⏰ Recordatorio de vencimiento enviado a ${nombre}\nNúmero: ${whatsapp}`);
+        }
 </script>
 {% endblock %}

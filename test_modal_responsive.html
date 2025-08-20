@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Responsive - Gestor de Streaming</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .responsive-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        /* CSS para Modal Personalizado - COMPLETAMENTE RESPONSIVE */
+        .modal-personalizado {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .modal-contenido {
+            position: relative;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 2;
+            margin: auto;
+        }
+
+        /* Responsive para pantallas pequeñas */
+        @media (max-width: 576px) {
+            .modal-personalizado {
+                padding: 0.5rem;
+            }
+            
+            .modal-contenido {
+                width: 100%;
+                max-height: 95vh;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .modal-header {
+                border-radius: 0;
+                padding: 0.75rem 1rem;
+            }
+            
+            .modal-body {
+                padding: 1rem;
+            }
+            
+            .modal-footer {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        /* Responsive para pantallas medianas */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .modal-contenido {
+                width: 95%;
+                max-width: 600px;
+            }
+            
+            .modal-body {
+                padding: 1.25rem;
+            }
+        }
+
+        /* Responsive para pantallas grandes */
+        @media (min-width: 769px) {
+            .modal-contenido {
+                width: 90%;
+                max-width: 800px;
+            }
+        }
+
+        .modal-header {
+            background-color: #198754;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .btn-cerrar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-cerrar:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* Responsive para el header del modal */
+        @media (max-width: 576px) {
+            .modal-header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .modal-title {
+                font-size: 1.1rem;
+            }
+            
+            .btn-cerrar {
+                width: 28px;
+                height: 28px;
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Responsive para el body del modal */
+        @media (max-width: 576px) {
+            .modal-body {
+                padding: 1rem;
+            }
+            
+            .form-control-lg {
+                font-size: 1rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+            }
+            
+            .form-text {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Responsive para el footer del modal */
+        @media (max-width: 576px) {
+            .modal-footer {
+                padding: 0.75rem 1rem;
+            }
+            
+            .modal-footer .btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.75rem;
+            }
+        }
+
+        /* Botón de WhatsApp */
+        .btn-whatsapp {
+            background-color: #25d366 !important;
+            border-color: #25d366 !important;
+            color: white !important;
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #128c7e !important;
+            border-color: #128c7e !important;
+            color: white !important;
+        }
+
+        .btn-whatsapp:focus {
+            background-color: #25d366 !important;
+            border-color: #25d366 !important;
+            color: white !important;
+            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25) !important;
+        }
+
+        /* Asegurar que los inputs sean interactivos */
+        .modal-personalizado input,
+        .modal-personalizado button,
+        .modal-personalizado textarea,
+        .modal-personalizado select {
+            pointer-events: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+        }
+
+        .modal-personalizado .form-control {
+            background-color: #fff !important;
+            color: #495057 !important;
+            cursor: text !important;
+            border: 1px solid #ced4da !important;
+        }
+
+        .modal-personalizado .btn {
+            cursor: pointer !important;
+        }
+
+        /* Estilos responsive para elementos del formulario */
+        @media (max-width: 576px) {
+            .modal-personalizado .row {
+                margin-left: -0.5rem;
+                margin-right: -0.5rem;
+            }
+            
+            .modal-personalizado .col-12,
+            .modal-personalizado .col-sm-6,
+            .modal-personalizado .col-md-4 {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .modal-personalizado .alert {
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            
+            .modal-personalizado .badge {
+                font-size: 0.75rem !important;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .modal-personalizado code {
+                font-size: 0.75rem !important;
+                word-break: break-all;
+            }
+        }
+
+        /* Estilos responsive para pantallas medianas */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .modal-personalizado .alert {
+                padding: 1rem;
+            }
+            
+            .modal-personalizado .badge {
+                font-size: 0.85rem !important;
+            }
+            
+            .modal-personalizado code {
+                font-size: 0.85rem !important;
+            }
+        }
+
+        /* Mejoras para pantallas táctiles */
+        @media (hover: none) and (pointer: coarse) {
+            .modal-personalizado .btn {
+                min-height: 44px;
+            }
+            
+            .modal-personalizado .form-control {
+                min-height: 44px;
+            }
+            
+            .modal-personalizado .btn-cerrar {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        /* Estilos para mejorar la legibilidad en pantallas pequeñas */
+        @media (max-width: 576px) {
+            .modal-personalizado .form-label {
+                margin-bottom: 0.5rem;
+            }
+            
+            .modal-personalizado .mb-3 {
+                margin-bottom: 1rem !important;
+            }
+            
+            .modal-personalizado .mb-4 {
+                margin-bottom: 1.5rem !important;
+            }
+            
+            /* Mejorar espaciado entre elementos */
+            .modal-personalizado .row.g-3 > * {
+                margin-bottom: 0.5rem;
+            }
+            
+            .modal-personalizado .row.g-3 > *:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        /* Estilos para pantallas muy pequeñas (smartphones pequeños) */
+        @media (max-width: 375px) {
+            .modal-personalizado {
+                padding: 0.25rem;
+            }
+            
+            .modal-contenido {
+                max-height: 98vh;
+            }
+            
+            .modal-header {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .modal-body {
+                padding: 0.75rem;
+            }
+            
+            .modal-footer {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .modal-title {
+                font-size: 1rem;
+            }
+            
+            .form-control-lg {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.6rem;
+            }
+        }
+
+        /* Estilos para pantallas de alta densidad (retina) */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .modal-personalizado .btn,
+            .modal-personalizado .form-control {
+                border-width: 0.5px;
+            }
+        }
+
+        /* Estilos para validación del formulario */
+        .form-control.is-valid {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .form-control.is-valid:focus {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+        }
+
+        .form-control.is-invalid:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        /* Indicadores de validación */
+        .form-control.is-valid {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .form-control.is-invalid {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4M7.2 4.6l-1.4 1.4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-mobile-alt text-primary me-3"></i>
+            Test Modal Responsive
+        </h1>
+        
+        <div class="responsive-info">
+            <h5><i class="fas fa-info-circle me-2"></i>Información del Test</h5>
+            <p>Este archivo demuestra el modal responsive del Gestor de Streaming. Prueba redimensionar tu navegador o usar las herramientas de desarrollador para simular diferentes dispositivos.</p>
+        </div>
+        
+        <div class="text-center">
+            <button class="test-button" onclick="abrirModalVenta()">
+                <i class="fas fa-dollar-sign me-2"></i>
+                Abrir Modal de Venta
+            </button>
+        </div>
+        
+        <div class="responsive-info mt-4">
+            <h6><i class="fas fa-mobile-alt me-2"></i>Breakpoints Responsive:</h6>
+            <ul class="list-unstyled">
+                <li><strong>Móvil:</strong> &lt; 576px - Modal a pantalla completa</li>
+                <li><strong>Tablet:</strong> 577px - 768px - Modal adaptado</li>
+                <li><strong>Desktop:</strong> &gt; 769px - Modal centrado</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal para Marcar como Vendida - PERSONALIZADO Y RESPONSIVE -->
+    <div id="modalVenta" class="modal-personalizado" style="display: none;">
+        <div class="modal-overlay" onclick="cerrarModal()"></div>
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-dollar-sign me-2"></i>
+                    Vender Cuenta
+                </h5>
+                <button type="button" class="btn-cerrar" onclick="cerrarModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" id="formVenta">
+                <div class="modal-body">
+                    <!-- Campos del formulario - Responsive -->
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="mb-3">
+                                <label for="nombre_comprador" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    Nombre del Comprador *
+                                </label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       id="nombre_comprador" name="nombre_comprador" 
+                                       required placeholder="Ingresa el nombre completo"
+                                       autocomplete="off">
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-sm-6">
+                            <div class="mb-3">
+                                <label for="whatsapp_comprador" class="form-label fw-bold">
+                                    <i class="fab fa-whatsapp me-2 text-success"></i>
+                                    Número de WhatsApp *
+                                </label>
+                                <input type="tel" class="form-control form-control-lg" 
+                                       id="whatsapp_comprador" name="whatsapp_comprador" 
+                                       required placeholder="+34612345678"
+                                       autocomplete="off">
+                                <div class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Incluye el código del país
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="fecha_vencimiento" class="form-label fw-bold">
+                            <i class="fas fa-calendar-alt me-2 text-warning"></i>
+                            Fecha de Vencimiento *
+                        </label>
+                        <input type="date" class="form-control form-control-lg" 
+                               id="fecha_vencimiento" name="fecha_vencimiento" 
+                               required>
+                        <div class="form-text text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            La cuenta debe vencer después de la fecha de compra
+                        </div>
+                    </div>
+                    
+                    <!-- Información de la cuenta - Responsive -->
+                    <div class="alert alert-info border-0">
+                        <div class="row g-2">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-tv me-2"></i>Plataforma:</strong><br>
+                                <span class="badge bg-primary fs-6">Netflix</span>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-envelope me-2"></i>Email:</strong><br>
+                                <code class="fs-6 text-break">usuario@ejemplo.com</code>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-calendar me-2"></i>Fecha de Creación:</strong><br>
+                                <span class="badge bg-info fs-6">20/08/2025</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de estado de la venta -->
+                    <div id="estadoVenta" class="alert alert-warning border-0" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="mensajeEstado">Completa todos los campos para continuar</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer del modal - Responsive -->
+                <div class="modal-footer">
+                    <div class="d-grid gap-2 w-100">
+                        <!-- Botones en móvil: apilados verticalmente -->
+                        <div class="d-flex flex-column flex-sm-row gap-2 w-100">
+                            <button type="button" class="btn btn-secondary btn-lg flex-fill" onclick="cerrarModal()">
+                                <i class="fas fa-times me-2"></i>
+                                <span class="d-none d-sm-inline">Cancelar</span>
+                                <span class="d-sm-none">Cancelar</span>
+                            </button>
+                            <button type="button" class="btn btn-whatsapp btn-lg flex-fill" onclick="enviarWhatsApp()">
+                                <i class="fab fa-whatsapp me-2"></i>
+                                <span class="d-none d-sm-inline">Enviar a WhatsApp</span>
+                                <span class="d-sm-none">WhatsApp</span>
+                            </button>
+                            <button type="button" class="btn btn-success btn-lg flex-fill" onclick="confirmarVenta()">
+                                <i class="fas fa-check me-2"></i>
+                                <span class="d-none d-sm-inline">Confirmar Venta</span>
+                                <span class="d-sm-none">Confirmar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Función para abrir modal de venta
+        function abrirModalVenta() {
+            // Establecer fecha mínima como hoy
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha_vencimiento').min = today;
+            
+            // Mostrar modal personalizado
+            document.getElementById('modalVenta').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Evitar scroll
+            
+            // Mostrar estado inicial
+            updateVentaStatus();
+            
+            // Enfoque en el primer campo en dispositivos móviles
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    const primerCampo = document.getElementById('nombre_comprador');
+                    if (primerCampo) {
+                        primerCampo.focus();
+                        // Scroll suave al modal en móviles
+                        primerCampo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+            
+            // Agregar listener para tecla Escape
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+
+        // Función para cerrar modal personalizado
+        function cerrarModal() {
+            document.getElementById('modalVenta').style.display = 'none';
+            document.body.style.overflow = ''; // Restaurar scroll
+            
+            // Remover listener de tecla Escape
+            document.removeEventListener('keydown', handleEscapeKey);
+            
+            // Limpiar formulario
+            document.getElementById('formVenta').reset();
+        }
+
+        // Función para manejar tecla Escape
+        function handleEscapeKey(event) {
+            if (event.key === 'Escape') {
+                cerrarModal();
+            }
+        }
+
+        // Función para enviar a WhatsApp
+        function enviarWhatsApp() {
+            // Obtener valores del formulario
+            const nombre = document.getElementById('nombre_comprador').value.trim();
+            const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
+            const fechaVencimiento = document.getElementById('fecha_vencimiento').value;
+            
+            // Validar que los campos estén completos
+            if (!nombre || !whatsapp || !fechaVencimiento) {
+                alert('Por favor completa todos los campos requeridos antes de enviar a WhatsApp');
+                return;
+            }
+            
+            // Validar formato de WhatsApp
+            if (!whatsapp.startsWith('+')) {
+                alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
+                return;
+            }
+            
+            // Crear mensaje de WhatsApp
+            const mensaje = `¡Hola! 🎉
+
+📱 *Datos de tu cuenta Netflix:*
+
+🏷️ *Plataforma:* Netflix
+📧 *Email:* usuario@ejemplo.com
+🔑 *Contraseña:* [Se enviará por separado]
+📅 *Fecha de Creación:* 20/08/2025
+📅 *Vencimiento:* ${fechaVencimiento}
+
+✅ *Tu cuenta está lista para usar*
+
+📱 *ID de la cuenta:* #12345
+
+¡Disfruta de tu cuenta! 🎬
+
+Si tienes alguna pregunta, no dudes en contactarnos.`;
+            
+            // Codificar el mensaje para URL
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            
+            // Crear URL de WhatsApp
+            const numeroWhatsApp = whatsapp.replace('+', '');
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+            
+            // Abrir WhatsApp en nueva pestaña
+            window.open(urlWhatsApp, '_blank');
+            
+            // Mostrar confirmación
+            alert(`📱 WhatsApp abierto para ${nombre}\nNúmero: ${whatsapp}\n\nEl mensaje ya está pre-formateado y listo para enviar.`);
+        }
+
+        // Función para confirmar venta
+        function confirmarVenta() {
+            // Obtener valores del formulario
+            const nombre = document.getElementById('nombre_comprador').value.trim();
+            const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
+            const fecha = document.getElementById('fecha_vencimiento').value;
+            
+            // Validar campos obligatorios
+            if (!nombre || !whatsapp || !fecha) {
+                alert('Por favor completa todos los campos obligatorios');
+                return;
+            }
+            
+            // Validar formato de WhatsApp
+            if (!whatsapp.startsWith('+')) {
+                alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
+                return;
+            }
+            
+            // Validar fecha futura
+            const fechaVencimiento = new Date(fecha);
+            const hoy = new Date();
+            if (fechaVencimiento <= hoy) {
+                alert('La fecha de vencimiento debe ser futura');
+                return;
+            }
+            
+            // Simular envío del formulario
+            if (confirm('¿Estás seguro de que quieres confirmar esta venta?')) {
+                // Aquí normalmente se enviaría el formulario al servidor
+                console.log('Datos de la venta:', {
+                    nombre_comprador: nombre,
+                    whatsapp_comprador: whatsapp,
+                    fecha_vencimiento: fecha,
+                    plataforma: 'Netflix',
+                    email: 'usuario@ejemplo.com',
+                    fecha_creacion: '20/08/2025'
+                });
+                
+                // Mostrar confirmación
+                alert(`✅ Venta confirmada exitosamente!\n\nComprador: ${nombre}\nWhatsApp: ${whatsapp}\nVencimiento: ${fecha}`);
+                
+                // Cerrar modal
+                cerrarModal();
+            }
+        }
+
+        // Configurar funcionalidades responsive
+        function setupResponsiveFeatures() {
+            // Detectar orientación del dispositivo
+            function handleOrientationChange() {
+                const modal = document.getElementById('modalVenta');
+                if (modal && modal.style.display !== 'none') {
+                    // Reajustar modal cuando cambie la orientación
+                    setTimeout(() => {
+                        const modalContent = modal.querySelector('.modal-contenido');
+                        if (modalContent) {
+                            modalContent.scrollTop = 0;
+                        }
+                    }, 100);
+                }
+            }
+            
+            // Listener para cambio de orientación
+            window.addEventListener('orientationchange', handleOrientationChange);
+            
+            // Listener para cambio de tamaño de ventana
+            window.addEventListener('resize', function() {
+                const modal = document.getElementById('modalVenta');
+                if (modal && modal.style.display !== 'none') {
+                    // Reajustar modal en cambios de tamaño
+                    setTimeout(() => {
+                        const modalContent = modal.querySelector('.modal-contenido');
+                        if (modalContent) {
+                            // Asegurar que el modal esté centrado
+                            modalContent.style.margin = 'auto';
+                        }
+                    }, 100);
+                }
+            });
+            
+            // Mejorar experiencia táctil en móviles
+            if ('ontouchstart' in window) {
+                const modal = document.getElementById('modalVenta');
+                if (modal) {
+                    // Prevenir zoom en inputs en iOS
+                    const inputs = modal.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        input.addEventListener('focus', function() {
+                            this.style.fontSize = '16px'; // Prevenir zoom en iOS
+                        });
+                        
+                        input.addEventListener('blur', function() {
+                            this.style.fontSize = '';
+                        });
+                    });
+                }
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            setupResponsiveFeatures();
+            setupFormValidation();
+        });
+
+        // Configurar validación del formulario
+        function setupFormValidation() {
+            const form = document.getElementById('formVenta');
+            const inputs = form.querySelectorAll('input[required]');
+            
+            // Validación en tiempo real
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    validateField(this);
+                    updateVentaStatus();
+                });
+                
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                    updateVentaStatus();
+                });
+            });
+            
+            // Validar fecha mínima
+            const fechaInput = document.getElementById('fecha_vencimiento');
+            if (fechaInput) {
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.min = today;
+                
+                fechaInput.addEventListener('change', function() {
+                    validateDate(this);
+                    updateVentaStatus();
+                });
+            }
+        }
+
+        // Validar campo individual
+        function validateField(field) {
+            const value = field.value.trim();
+            const isValid = value.length > 0;
+            
+            if (isValid) {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+            } else {
+                field.classList.remove('is-valid');
+                field.classList.add('is-invalid');
+            }
+            
+            return isValid;
+        }
+
+        // Validar fecha
+        function validateDate(field) {
+            const selectedDate = new Date(field.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate <= today) {
+                field.classList.remove('is-valid');
+                field.classList.add('is-invalid');
+                return false;
+            } else {
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+                return true;
+            }
+        }
+
+        // Actualizar estado de la venta
+        function updateVentaStatus() {
+            const nombre = document.getElementById('nombre_comprador').value.trim();
+            const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
+            const fecha = document.getElementById('fecha_vencimiento').value;
+            const estadoDiv = document.getElementById('estadoVenta');
+            const mensajeSpan = document.getElementById('mensajeEstado');
+            
+            if (!nombre && !whatsapp && !fecha) {
+                // No hay campos completados
+                estadoDiv.style.display = 'block';
+                estadoDiv.className = 'alert alert-warning border-0';
+                mensajeSpan.innerHTML = '<i class="fas fa-info-circle me-2"></i>Completa todos los campos para continuar';
+            } else if (nombre && whatsapp && fecha) {
+                // Todos los campos están completos
+                estadoDiv.style.display = 'block';
+                estadoDiv.className = 'alert alert-success border-0';
+                mensajeSpan.innerHTML = '<i class="fas fa-check-circle me-2"></i>¡Formulario completo! Puedes confirmar la venta';
+            } else {
+                // Algunos campos están completos
+                const camposCompletados = [nombre, whatsapp, fecha].filter(Boolean).length;
+                estadoDiv.style.display = 'block';
+                estadoDiv.className = 'alert alert-info border-0';
+                mensajeSpan.innerHTML = `<i class="fas fa-clock me-2"></i>${camposCompletados}/3 campos completados`;
+            }
+        }
+    </script>
+</body>
+</html>
