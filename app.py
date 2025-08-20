@@ -199,17 +199,17 @@ def index():
         usuarios_stats = None
         ultimas_cuentas = Cuenta.query.filter_by(usuario_id=current_user.id).order_by(Cuenta.fecha_creacion.desc()).limit(5).all()
     
-    # Cuentas por plataforma (solo del usuario actual o todas si es admin)
+    # Cuentas por plataforma (todas las cuentas, independientemente del estado)
     if current_user.es_admin:
         plataformas = db.session.query(
             Cuenta.plataforma, 
             db.func.count(Cuenta.id).label('cantidad')
-        ).filter_by(estado='Disponible').group_by(Cuenta.plataforma).all()
+        ).group_by(Cuenta.plataforma).all()
     else:
         plataformas = db.session.query(
             Cuenta.plataforma, 
             db.func.count(Cuenta.id).label('cantidad')
-        ).filter_by(usuario_id=current_user.id, estado='Disponible').group_by(Cuenta.plataforma).all()
+        ).filter_by(usuario_id=current_user.id).group_by(Cuenta.plataforma).all()
     
     return render_template('index.html',
                          total_cuentas=total_cuentas,
