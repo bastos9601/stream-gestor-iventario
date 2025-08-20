@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ cuenta.plataforma }} - {{ cuenta.email }} - Gestor de Cuentas de Streaming{% endblock %}
+{% block title %}Detalles de la Cuenta - Gestor de Cuentas de Streaming{% endblock %}
 
 {% block content %}
-<div class="row">
+<!-- Header -->
+<div class="row mb-4">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="mb-2">
                     <i class="fas fa-eye me-2"></i>
@@ -14,231 +15,233 @@
                 <p class="lead text-muted">Información completa de la cuenta seleccionada</p>
             </div>
             <div class="btn-group" role="group">
-                <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>
-                    Volver
+                <a href="{{ url_for('cuentas') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
                 </a>
-                {% if current_user.es_admin %}
                 <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning">
-                    <i class="fas fa-edit me-2"></i>
-                    Editar
+                    <i class="fas fa-edit me-2"></i>Editar
                 </a>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- Account Information -->
-    <div class="col-lg-8 mb-4">
+    <!-- Información de la Cuenta - Sección Principal -->
+    <div class="col-lg-8">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-info-circle me-2"></i>
                     Información de la Cuenta
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row g-3">
+                <div class="row">
+                    <!-- Columna Izquierda -->
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Plataforma</label>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-tv text-primary me-2"></i>
-                            <span class="fs-5">{{ cuenta.plataforma }}</span>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-tv me-2"></i>Plataforma
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary fs-6">{{ cuenta.plataforma }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <code class="text-danger fs-6">{{ cuenta.email }}</code>
+                                <button class="btn btn-sm btn-outline-primary ms-2" 
+                                        onclick="copyToClipboard('{{ cuenta.email }}')"
+                                        title="Copiar email">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-dollar-sign me-2"></i>Precio
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success fs-5">${{ "%.2f"|format(cuenta.precio) if cuenta.precio else '0.00' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-hashtag me-2"></i>ID de la Cuenta
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-secondary fs-6">#{{ cuenta.id }}</span>
+                            </div>
                         </div>
                     </div>
                     
+                    <!-- Columna Derecha -->
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Estado</label>
-                        <div>
-                            {% if cuenta.estado == 'disponible' %}
-                                <span class="badge badge-disponible fs-6">
-                                    <i class="fas fa-check me-1"></i>Disponible
-                                </span>
-                            {% else %}
-                                <span class="badge badge-vendida fs-6">
-                                    <i class="fas fa-dollar-sign me-1"></i>Vendida
-                                </span>
-                            {% endif %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-check-circle me-2"></i>Estado
+                            </label>
+                            <div class="d-flex align-items-center">
+                                {% if cuenta.estado == 'Disponible' %}
+                                    <span class="badge bg-success fs-6">
+                                        <i class="fas fa-check me-1"></i>Disponible
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning fs-6">
+                                        <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                    </span>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Email</label>
-                        <div class="d-flex align-items-center">
-                            <code class="fs-6 me-2">{{ cuenta.email }}</code>
-                            <button class="btn btn-sm btn-outline-primary" 
-                                    onclick="copyToClipboard('{{ cuenta.email }}')"
-                                    title="Copiar email">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-lock me-2"></i>Contraseña
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <code class="fs-6" id="passwordDisplay">••••••••••</code>
+                                <button class="btn btn-sm btn-outline-primary ms-2" 
+                                        onclick="togglePassword()"
+                                        title="Mostrar contraseña">
+                                    <i class="fas fa-eye" id="eyeIcon"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary ms-2" 
+                                        onclick="copyToClipboard('{{ cuenta.password }}')"
+                                        title="Copiar contraseña">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Contraseña</label>
-                        <div class="d-flex align-items-center">
-                            <input type="password" class="form-control-plaintext me-2" 
-                                   id="passwordDisplay" value="{{ cuenta.password }}" readonly>
-                            <button class="btn btn-sm btn-outline-primary me-2" 
-                                    onclick="togglePasswordDisplay()"
-                                    title="Mostrar/Ocultar contraseña">
-                                <i class="fas fa-eye" id="passwordToggleIcon"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-success" 
-                                    onclick="copyToClipboard('{{ cuenta.password }}')"
-                                    title="Copiar contraseña">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calendar me-2"></i>Fecha de Compra
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <span>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') if cuenta.fecha_compra else 'N/A' }}</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Precio</label>
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-success fs-5">${{ "%.2f"|format(cuenta.precio) }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Fecha de Compra</label>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-calendar text-info me-2"></i>
-                            <span>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') }}</span>
-                        </div>
-                    </div>
-                    
-                    {% if cuenta.fecha_venta %}
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Fecha de Venta</label>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-calendar-check text-success me-2"></i>
-                            <span>{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if cuenta.notas %}
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Notas</label>
-                        <div class="p-3 bg-light rounded">
-                            <i class="fas fa-sticky-note text-warning me-2"></i>
-                            {{ cuenta.notas }}
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">ID de la Cuenta</label>
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-secondary fs-6">#{{ cuenta.id }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Fecha de Creación</label>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-clock text-muted me-2"></i>
-                            <span>{{ cuenta.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-clock me-2"></i>Fecha de Creación
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <span>{{ cuenta.fecha_creacion.strftime('%d/%m/%Y %H:%M') if cuenta.fecha_creacion else 'N/A' }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Notas Adicionales -->
+                {% if cuenta.notas %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-sticky-note me-2"></i>Notas Adicionales
+                        </label>
+                        <div class="p-3 bg-light rounded">
+                            {{ cuenta.notas }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Actions and Status -->
-    <div class="col-lg-4 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
+    <!-- Columna Derecha - Acciones e Información Rápida -->
+    <div class="col-lg-4">
+        <!-- Acciones -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
                     <i class="fas fa-cogs me-2"></i>
                     Acciones
-                </h5>
+                </h6>
             </div>
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    {% if current_user.es_admin %}
-                        {% if cuenta.estado == 'disponible' %}
-                            <button type="button" class="btn btn-success w-100" onclick="abrirModalVenta()">
-                                <i class="fas fa-dollar-sign me-2"></i>
-                                Marcar como Vendida
-                            </button>
-                        {% else %}
-                            <div class="alert alert-info text-center">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Esta cuenta ya fue vendida
+                {% if cuenta.estado == 'Vendida' %}
+                    <!-- Información del Comprador cuando la cuenta está vendida -->
+                    <div class="mb-3">
+                        <h6 class="text-dark mb-2">Información del Comprador:</h6>
+                        <div class="bg-light p-3 rounded">
+                            <div class="mb-2">
+                                <strong>Nombre:</strong> {{ cuenta.nombre_comprador if cuenta.nombre_comprador else 'N/A' }}
                             </div>
-                            {% if cuenta.nombre_comprador %}
-                            <div class="mt-3">
-                                <h6 class="text-muted">Información del Comprador:</h6>
-                                <p class="mb-1"><strong>Nombre:</strong> {{ cuenta.nombre_comprador }}</p>
-                                <p class="mb-1"><strong>WhatsApp:</strong> {{ cuenta.whatsapp_comprador }}</p>
-                                <p class="mb-1"><strong>Vencimiento:</strong> 
-                                    {% if cuenta.fecha_vencimiento %}
-                                        {{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </p>
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="copiarMensajeWhatsApp({{ cuenta.id }})">
-                                    <i class="fas fa-copy me-2"></i>
-                                    Copiar Mensaje WhatsApp
-                                </button>
-                                <button type="button" class="btn btn-whatsapp btn-sm w-100 mb-2" onclick="enviarWhatsAppVendida({{ cuenta.id }})">
-                                    <i class="fab fa-whatsapp me-2"></i>
-                                    Enviar a WhatsApp
-                                </button>
-                                <button type="button" class="btn btn-warning btn-sm w-100 mb-2" onclick="recordarVencimiento({{ cuenta.id }})">
-                                    <i class="fas fa-clock me-2"></i>
-                                    Recordar Vencimiento
-                                </button>
+                            <div class="mb-2">
+                                <strong>WhatsApp:</strong> {{ cuenta.whatsapp_comprador if cuenta.whatsapp_comprador else 'N/A' }}
                             </div>
-                            {% endif %}
-                        {% endif %}
-                        
-                        <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning">
-                            <i class="fas fa-edit me-2"></i>
-                            Editar Cuenta
-                        </a>
-                        
-                        <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
-                              onsubmit="return confirmDelete('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer.')">
-                            <button type="submit" class="btn btn-danger w-100">
-                                <i class="fas fa-trash me-2"></i>
-                                Eliminar Cuenta
-                            </button>
-                        </form>
-                    {% else %}
-                        <div class="alert alert-info text-center">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Usuario Normal</strong><br>
-                            Solo puedes ver y agregar cuentas
+                            <div class="mb-2">
+                                <strong>Vencimiento:</strong> {{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') if cuenta.fecha_vencimiento else 'N/A' }}
+                            </div>
                         </div>
-                    {% endif %}
-                </div>
+                    </div>
+                    
+                    <!-- Botones de acción para cuentas vendidas -->
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary" onclick="copiarMensajeWhatsApp()">
+                            <i class="fas fa-copy me-2"></i>Copiar Mensaje WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="enviarWhatsAppComprador()">
+                            <i class="fab fa-whatsapp me-2"></i>Enviar a WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="recordarVencimiento()">
+                            <i class="fas fa-clock me-2"></i>Recordar Vencimiento
+                        </button>
+                        <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>Editar Cuenta
+                        </a>
+                        <button type="button" class="btn btn-danger" onclick="confirmarEliminacion()">
+                            <i class="fas fa-trash me-2"></i>Eliminar Cuenta
+                        </button>
+                    </div>
+                {% else %}
+                    <!-- Botones de acción para cuentas disponibles -->
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-success" onclick="abrirModalVenta()">
+                            <i class="fas fa-dollar-sign me-2"></i>Marcar como Vendida
+                        </button>
+                        <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>Editar Cuenta
+                        </a>
+                        <button type="button" class="btn btn-danger" onclick="confirmarEliminacion()">
+                            <i class="fas fa-trash me-2"></i>Eliminar Cuenta
+                        </button>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
-        <!-- Quick Info -->
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-bar me-2"></i>
+        <!-- Información Rápida -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
                     Información Rápida
-                </h5>
+                </h6>
             </div>
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-6">
-                        <h4 class="text-primary">{{ cuenta.precio|round(2) }}</h4>
+                        <h4 class="text-primary">{{ "%.1f"|format(cuenta.precio) if cuenta.precio else '0.0' }}</h4>
                         <small class="text-muted">Precio</small>
                     </div>
                     <div class="col-6">
-                        <h4 class="text-{% if cuenta.estado == 'disponible' %}success{% else %}warning{% endif %}">
-                            {{ cuenta.estado|title }}
-                        </h4>
+                        {% if cuenta.estado == 'Vendida' %}
+                            <h4 class="text-warning">Vendida</h4>
+                        {% elif cuenta.estado == 'Disponible' %}
+                            <h4 class="text-success">Disponible</h4>
+                        {% else %}
+                            <h4 class="text-secondary">{{ cuenta.estado|title }}</h4>
+                        {% endif %}
                         <small class="text-muted">Estado</small>
                     </div>
                 </div>
@@ -247,30 +250,30 @@
     </div>
 </div>
 
-<!-- Related Actions -->
-<div class="row">
+<!-- Acciones Relacionadas -->
+<div class="row mt-4">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
                     <i class="fas fa-link me-2"></i>
                     Acciones Relacionadas
-                </h5>
+                </h6>
             </div>
             <div class="card-body">
-                <div class="row g-3">
+                <div class="row">
                     <div class="col-md-4">
-                        <a href="{{ url_for('listar_cuentas', plataforma=cuenta.plataforma) }}" 
+                        <a href="{{ url_for('cuentas', plataforma=cuenta.plataforma) }}" 
                            class="btn btn-outline-primary w-100">
                             <i class="fas fa-tv me-2"></i>
                             Ver más cuentas de {{ cuenta.plataforma }}
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="{{ url_for('listar_cuentas', estado=cuenta.estado) }}" 
-                           class="btn btn-outline-info w-100">
-                            <i class="fas fa-filter me-2"></i>
-                            Ver cuentas {{ cuenta.estado }}s
+                        <a href="{{ url_for('cuentas', estado='Disponible') }}" 
+                           class="btn btn-outline-primary w-100">
+                            <i class="fas fa-arrow-down me-2"></i>
+                            Ver cuentas disponibles
                         </a>
                     </div>
                     <div class="col-md-4">
@@ -286,7 +289,7 @@
     </div>
 </div>
 
-<!-- Modal de Venta PERSONALIZADO Y FUNCIONAL -->
+<!-- Modal para Marcar como Vendida - PERSONALIZADO -->
 <div id="modalVenta" class="modal-personalizado" style="display: none;">
     <div class="modal-overlay" onclick="cerrarModal()"></div>
     <div class="modal-contenido">
@@ -359,8 +362,8 @@
                             <code class="fs-6">{{ cuenta.email }}</code>
                         </div>
                         <div class="col-md-4">
-                            <strong><i class="fas fa-dollar-sign me-2"></i>Precio:</strong><br>
-                            <span class="badge bg-success fs-6">${{ "%.2f"|format(cuenta.precio) }}</span>
+                            <strong><i class="fas fa-calendar me-2"></i>Fecha de Creación:</strong><br>
+                            <span class="badge bg-info fs-6">{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</span>
                         </div>
                     </div>
                 </div>
@@ -384,6 +387,8 @@
     </div>
 </div>
 
+<!-- Formulario oculto para eliminar cuenta -->
+<form id="formEliminar" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" method="POST" style="display: none;"></form>
 {% endblock %}
 
 {% block scripts %}
@@ -470,6 +475,26 @@
     gap: 0.5rem;
 }
 
+/* Botón de WhatsApp */
+.btn-whatsapp {
+    background-color: #25d366 !important;
+    border-color: #25d366 !important;
+    color: white !important;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128c7e !important;
+    border-color: #128c7e !important;
+    color: white !important;
+}
+
+.btn-whatsapp:focus {
+    background-color: #25d366 !important;
+    border-color: #25d366 !important;
+    color: white !important;
+    box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25) !important;
+}
+
 /* Asegurar que los inputs sean interactivos */
 .modal-personalizado input,
 .modal-personalizado button,
@@ -492,460 +517,90 @@
 .modal-personalizado .btn {
     cursor: pointer !important;
 }
-
-/* Botón de WhatsApp */
-.btn-whatsapp {
-    background-color: #25d366 !important;
-    border-color: #25d366 !important;
-    color: white !important;
-}
-
-.btn-whatsapp:hover {
-    background-color: #128c7e !important;
-    border-color: #128c7e !important;
-    color: white !important;
-}
-
-.btn-whatsapp:focus {
-    background-color: #25d366 !important;
-    border-color: #25d366 !important;
-    color: white !important;
-    box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25) !important;
-}
 </style>
 
 <script>
-// Toggle password visibility
-function togglePasswordDisplay() {
-    const passwordInput = document.getElementById('passwordDisplay');
-    const toggleIcon = document.getElementById('passwordToggleIcon');
+// Función para mostrar/ocultar contraseña
+function togglePassword() {
+    const passwordField = document.getElementById('passwordDisplay');
+    const eyeIcon = document.getElementById('eyeIcon');
     
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleIcon.classList.remove('fa-eye');
-        toggleIcon.classList.add('fa-eye-slash');
+    if (passwordField.textContent === '••••••••••') {
+        passwordField.textContent = '{{ cuenta.password }}';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
     } else {
-        passwordInput.type = 'password';
-        toggleIcon.classList.remove('fa-eye-slash');
-        toggleIcon.classList.add('fa-eye');
+        passwordField.textContent = '••••••••••';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
     }
 }
 
-// Enhanced copy to clipboard with better feedback
+// Función para copiar al portapapeles
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
-        // Show success toast
+        // Mostrar notificación de éxito
         const toast = document.createElement('div');
         toast.className = 'position-fixed top-0 end-0 p-3';
         toast.style.zIndex = '1050';
         toast.innerHTML = `
             <div class="toast show" role="alert">
-                <div class="toast-header bg-success text-white">
-                    <strong class="me-auto">¡Copiado!</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                <div class="toast-header">
+                    <i class="fas fa-check text-success me-2"></i>
+                    <strong class="me-auto">Copiado</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
                 </div>
                 <div class="toast-body">
-                    <i class="fas fa-check-circle me-2"></i>
-                    ${text.length > 30 ? text.substring(0, 30) + '...' : text} copiado al portapapeles
+                    Texto copiado al portapapeles
                 </div>
             </div>
         `;
         document.body.appendChild(toast);
         
         setTimeout(() => {
-            if (document.body.contains(toast)) {
-                document.body.removeChild(toast);
-            }
+            toast.remove();
         }, 3000);
-    }).catch(function(err) {
-        console.error('Error al copiar: ', err);
-        alert('Error al copiar al portapapeles');
     });
 }
 
-// Auto-hide password after 30 seconds for security
-setTimeout(function() {
-    const passwordInput = document.getElementById('passwordDisplay');
-    if (passwordInput && passwordInput.type === 'text') {
-        passwordInput.type = 'password';
-        const toggleIcon = document.getElementById('passwordToggleIcon');
-        if (toggleIcon) {
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        }
-    }
-}, 30000);
-
-// Función para copiar mensaje de WhatsApp
-function copiarMensajeWhatsApp(cuentaId) {
-    fetch(`/api/cuenta/${cuentaId}/mensaje-whatsapp`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert('Error: ' + data.error);
-                return;
-            }
-            
-            // Copiar mensaje al portapapeles
-            copyToClipboard(data.mensaje);
-            
-            // Mostrar información del comprador
-            const mensaje = `Mensaje copiado para ${data.nombre_comprador}\nWhatsApp: ${data.whatsapp}\n\nEl mensaje ya está en tu portapapeles. Puedes pegarlo directamente en WhatsApp.`;
-            alert(mensaje);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al obtener el mensaje de WhatsApp');
-        });
-}
-
-// Función para validar y enviar el formulario de venta
-function validarFormularioVenta(e) {
-    e.preventDefault();
-    
-    const nombre = document.getElementById('nombre_comprador').value.trim();
-    const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
-    const fecha = document.getElementById('fecha_vencimiento').value;
-    
-    console.log('Validando formulario:', { nombre, whatsapp, fecha });
-    
-    if (!nombre || !whatsapp || !fecha) {
-        alert('Por favor completa todos los campos obligatorios');
-        return false;
-    }
-    
-    // Validar formato de WhatsApp (debe incluir + y código de país)
-    if (!whatsapp.startsWith('+')) {
-        alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
-        return false;
-    }
-    
-    // Validar que la fecha de vencimiento sea futura
-    const fechaVencimiento = new Date(fecha);
-    const hoy = new Date();
-    if (fechaVencimiento <= hoy) {
-        alert('La fecha de vencimiento debe ser futura');
-        return false;
-    }
-    
-    if (confirm('¿Estás seguro de que quieres marcar esta cuenta como vendida?')) {
-        console.log('Enviando formulario...');
-        document.getElementById('formVenta').submit();
-    }
-}
-
-// Función simple para enviar formulario
-function enviarFormulario() {
-    console.log('Enviando formulario...');
-    
-    const nombre = document.getElementById('nombre_comprador').value.trim();
-    const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
-    const fecha = document.getElementById('fecha_vencimiento').value;
-    
-    if (!nombre || !whatsapp || !fecha) {
-        alert('Por favor completa todos los campos obligatorios');
-        return;
-    }
-    
-    if (confirm('¿Estás seguro de que quieres marcar esta cuenta como vendida?')) {
-        document.getElementById('formVenta').submit();
-    }
-}
-
-// Función de debug para el modal
-function debugModal() {
-    console.log('=== DEBUG MODAL ===');
-    console.log('Bootstrap:', typeof bootstrap !== 'undefined' ? 'Disponible' : 'NO disponible');
-    console.log('Modal element:', document.getElementById('modalVenta'));
-    console.log('Form element:', document.getElementById('formVenta'));
-    console.log('Nombre input:', document.getElementById('nombre_comprador'));
-    console.log('WhatsApp input:', document.getElementById('whatsapp_comprador'));
-    console.log('Fecha input:', document.getElementById('fecha_vencimiento'));
-    
-    // Probar abrir modal manualmente
-    try {
-        const modalEl = document.getElementById('modalVenta');
-        if (modalEl && typeof bootstrap !== 'undefined') {
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-            console.log('Modal abierto manualmente');
-        }
-    } catch (error) {
-        console.error('Error al abrir modal:', error);
-    }
-}
-
-// Función para probar la interactividad de los campos
-function probarInteractividad() {
-    console.log('=== PROBANDO INTERACTIVIDAD ===');
-    
-    const nombreInput = document.getElementById('nombre_comprador');
-    const whatsappInput = document.getElementById('whatsapp_comprador');
-    const fechaInput = document.getElementById('fecha_vencimiento');
-    
-    if (nombreInput) {
-        console.log('Probando campo nombre...');
-        nombreInput.focus();
-        nombreInput.value = 'TEST';
-        nombreInput.style.backgroundColor = 'yellow';
-        console.log('Campo nombre modificado');
-    }
-    
-    if (whatsappInput) {
-        console.log('Probando campo WhatsApp...');
-        whatsappInput.focus();
-        whatsappInput.value = '+1234567890';
-        whatsappInput.style.backgroundColor = 'lightgreen';
-        console.log('Campo WhatsApp modificado');
-    }
-    
-    if (fechaInput) {
-        console.log('Probando campo fecha...');
-        fechaInput.focus();
-        fechaInput.value = '2025-12-31';
-        fechaInput.style.backgroundColor = 'lightblue';
-        console.log('Campo fecha modificado');
-    }
-}
-
-// Función de emergencia para forzar interactividad
-function forzarInteractividad() {
-    console.log('=== FORZANDO INTERACTIVIDAD DE EMERGENCIA ===');
-    
-    const inputs = document.querySelectorAll('#modalVenta input');
-    console.log('Inputs encontrados:', inputs.length);
-    
-    inputs.forEach((input, index) => {
-        console.log(`Forzando input ${index + 1}:`, input);
-        
-        // Remover todos los atributos restrictivos
-        input.removeAttribute('disabled');
-        input.removeAttribute('readonly');
-        input.removeAttribute('style');
-        
-        // Forzar estilos inline
-        input.style.cssText = `
-            pointer-events: auto !important;
-            user-select: text !important;
-            background-color: #fff !important;
-            color: #495057 !important;
-            cursor: text !important;
-            position: relative !important;
-            z-index: 10000 !important;
-            border: 2px solid red !important;
-        `;
-        
-        // Agregar event listeners
-        input.addEventListener('click', function(e) {
-            e.stopPropagation();
-            this.focus();
-            console.log('Input clickeado:', this);
-        });
-        
-        input.addEventListener('focus', function() {
-            console.log('Input enfocado:', this);
-        });
-        
-        input.addEventListener('input', function() {
-            console.log('Input modificado:', this.value);
-        });
-        
-        // Hacer el input editable
-        input.contentEditable = true;
-        input.spellcheck = false;
-        
-        console.log(`Input ${index + 1} forzado:`, input);
-    });
-    
-    // Intentar enfocar el primer input
-    if (inputs.length > 0) {
-        setTimeout(() => {
-            inputs[0].focus();
-            inputs[0].click();
-            console.log('Primer input enfocado y clickeado');
-        }, 500);
-    }
-}
-
-// Función de diagnóstico CSS completo
-function diagnosticarModal() {
-    console.log('=== DIAGNÓSTICO CSS COMPLETO ===');
-    
-    const modal = document.getElementById('modalVenta');
-    if (!modal) {
-        console.error('❌ Modal no encontrado');
-        return;
-    }
-    
-    console.log('✅ Modal encontrado:', modal);
-    
-    // Verificar inputs
-    const inputs = document.querySelectorAll('#modalVenta input');
-    console.log(`📝 Inputs encontrados: ${inputs.length}`);
-    
-    inputs.forEach((input, index) => {
-        console.log(`\n--- INPUT ${index + 1} ---`);
-        console.log('Elemento:', input);
-        
-        // Verificar atributos
-        const disabled = input.hasAttribute('disabled');
-        const readonly = input.hasAttribute('readonly');
-        console.log(`❌ Disabled: ${disabled}`);
-        console.log(`❌ Readonly: ${readonly}`);
-        
-        // Verificar estilos computados
-        const styles = window.getComputedStyle(input);
-        console.log(`🎨 Background: ${styles.backgroundColor}`);
-        console.log(`👆 Pointer-events: ${styles.pointerEvents}`);
-        console.log(`👤 User-select: ${styles.userSelect}`);
-        console.log(`📍 Position: ${styles.position}`);
-        console.log(`📌 Z-index: ${styles.zIndex}`);
-        console.log(`🎯 Cursor: ${styles.cursor}`);
-        
-        // Verificar si está bloqueado
-        if (disabled || readonly) {
-            console.log('🚫 INPUT BLOQUEADO POR ATRIBUTOS');
-        }
-        if (styles.pointerEvents === 'none') {
-            console.log('🚫 INPUT BLOQUEADO POR POINTER-EVENTS');
-        }
-        if (styles.userSelect === 'none') {
-            console.log('🚫 INPUT BLOQUEADO POR USER-SELECT');
-        }
-    });
-    
-    // Verificar modal backdrop
-    const backdrop = document.querySelector('.modal-backdrop');
-    if (backdrop) {
-        const backdropStyles = window.getComputedStyle(backdrop);
-        console.log(`\n--- MODAL BACKDROP ---`);
-        console.log('Elemento:', backdrop);
-        console.log(`📌 Z-index: ${backdropStyles.zIndex}`);
-        console.log(`📍 Position: ${backdropStyles.position}`);
-    }
-    
-    // Verificar elementos superpuestos
-    console.log(`\n--- VERIFICANDO ELEMENTOS SUPERPUESTOS ---`);
-    const modalRect = modal.getBoundingClientRect();
-    inputs.forEach((input, index) => {
-        const inputRect = input.getBoundingClientRect();
-        const elementsAtPoint = document.elementsFromPoint(
-            inputRect.left + inputRect.width / 2,
-            inputRect.top + inputRect.height / 2
-        );
-        
-        console.log(`\nElementos en el punto del Input ${index + 1}:`);
-        elementsAtPoint.forEach((el, i) => {
-            if (el !== input && el !== modal) {
-                console.log(`  ${i + 1}. ${el.tagName} - ${el.className || 'sin clase'}`);
-            }
-        });
-    });
-    
-    console.log('\n=== FIN DEL DIAGNÓSTICO ===');
-}
-
-// Configuración del Modal Personalizado
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM cargado, configurando modal personalizado...');
-    
-    // Establecer fecha mínima para vencimiento
-    const fechaVencimiento = document.getElementById('fecha_vencimiento');
-    if (fechaVencimiento) {
-        const hoy = new Date();
-        const fechaMinima = hoy.toISOString().split('T')[0];
-        fechaVencimiento.min = fechaMinima;
-        console.log('Fecha mínima establecida:', fechaMinima);
-    }
-    
-    // Configurar formulario
-    const formVenta = document.getElementById('formVenta');
-    if (formVenta) {
-        formVenta.addEventListener('submit', validarFormularioVenta);
-        console.log('Formulario configurado');
-    }
-});
-
-// Función para abrir el modal personalizado
+// Función para abrir modal de venta
 function abrirModalVenta() {
-    console.log('Abriendo modal personalizado...');
-    const modal = document.getElementById('modalVenta');
-    if (modal) {
-        modal.style.display = 'flex';
-        
-        // Limpiar campos
-        setTimeout(() => {
-            const inputs = document.querySelectorAll('#modalVenta input');
-            inputs.forEach((input, index) => {
-                input.value = '';
-                input.disabled = false;
-                input.readOnly = false;
-                console.log(`Campo ${index + 1} habilitado:`, input);
-            });
-            
-            // Enfocar primer campo
-            if (inputs.length > 0) {
-                inputs[0].focus();
-                console.log('Primer campo enfocado');
-            }
-        }, 100);
-    }
+    // Establecer fecha mínima como hoy
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha_vencimiento').min = today;
+    
+    // Mostrar modal personalizado
+    document.getElementById('modalVenta').style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Evitar scroll
 }
 
-// Función para cerrar el modal personalizado
+// Función para cerrar modal personalizado
 function cerrarModal() {
-    console.log('Cerrando modal personalizado...');
-    const modal = document.getElementById('modalVenta');
-    if (modal) {
-        modal.style.display = 'none';
-    }
+    document.getElementById('modalVenta').style.display = 'none';
+    document.body.style.overflow = ''; // Restaurar scroll
 }
 
-// Función para enviar datos a WhatsApp
+// Función para enviar a WhatsApp
 function enviarWhatsApp() {
-    console.log('Enviando a WhatsApp...');
+    const nombre = document.getElementById('nombre_comprador').value;
+    const whatsapp = document.getElementById('whatsapp_comprador').value;
+    const fechaVencimiento = document.getElementById('fecha_vencimiento').value;
     
-    // Obtener datos del formulario
-    const nombre = document.getElementById('nombre_comprador').value.trim();
-    const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
-    const fecha = document.getElementById('fecha_vencimiento').value;
-    
-    // Validar que estén completos los campos
-    if (!nombre || !whatsapp || !fecha) {
-        alert('Por favor completa todos los campos antes de enviar a WhatsApp');
+    if (!nombre || !whatsapp || !fechaVencimiento) {
+        alert('Por favor completa todos los campos requeridos');
         return;
     }
-    
-    // Validar formato de WhatsApp
-    if (!whatsapp.startsWith('+')) {
-        alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
-        return;
-    }
-    
-    // Obtener datos de la cuenta
-    const plataforma = '{{ cuenta.plataforma }}';
-    const email = '{{ cuenta.email }}';
-    const password = '{{ cuenta.password }}';
-    const precio = '{{ "%.2f"|format(cuenta.precio) }}';
-    
-    // Formatear fecha de vencimiento
-    const fechaVencimiento = new Date(fecha);
-    const fechaFormateada = fechaVencimiento.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
     
     // Crear mensaje de WhatsApp
-    const mensaje = `¡Hola ${nombre}! 🎉
+    const mensaje = `¡Hola! 🎉
 
-📱 *Datos de tu cuenta ${plataforma}:*
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
 
-🏷️ *Plataforma:* ${plataforma}
-📧 *Email:* ${email}
-🔑 *Contraseña:* ${password}
-💰 *Precio:* $${precio}
-📅 *Vencimiento:* ${fechaFormateada}
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Fecha de Creación:* {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
+📅 *Vencimiento:* ${fechaVencimiento}
 
 ✅ *Tu cuenta está lista para usar*
 
@@ -954,7 +609,7 @@ function enviarWhatsApp() {
 ¡Disfruta de tu cuenta! 🎬
 
 Si tienes alguna pregunta, no dudes en contactarnos.`;
-
+    
     // Codificar el mensaje para URL
     const mensajeCodificado = encodeURIComponent(mensaje);
     
@@ -965,35 +620,21 @@ Si tienes alguna pregunta, no dudes en contactarnos.`;
     // Abrir WhatsApp en nueva pestaña
     window.open(urlWhatsApp, '_blank');
     
-    console.log('WhatsApp abierto con mensaje:', mensaje);
-    
     // Mostrar confirmación
     alert(`WhatsApp abierto para ${nombre}\nNúmero: ${whatsapp}\n\nEl mensaje ya está pre-formateado y listo para enviar.`);
 }
 
-// Función para enviar WhatsApp de cuenta ya vendida
-function enviarWhatsAppVendida(cuentaId) {
-    console.log('Enviando WhatsApp de cuenta vendida:', cuentaId);
-    
-    // Obtener datos de la cuenta vendida
-    const plataforma = '{{ cuenta.plataforma }}';
-    const email = '{{ cuenta.email }}';
-    const password = '{{ cuenta.password }}';
-    const precio = '{{ "%.2f"|format(cuenta.precio) }}';
-    const nombreComprador = '{{ cuenta.nombre_comprador }}';
-    const whatsappComprador = '{{ cuenta.whatsapp_comprador }}';
-    const fechaVencimiento = '{{ cuenta.fecha_vencimiento.strftime("%d/%m/%Y") if cuenta.fecha_vencimiento else "N/A" }}';
-    
-    // Crear mensaje de WhatsApp
-    const mensaje = `¡Hola ${nombreComprador}! 🎉
+// Función para copiar mensaje de WhatsApp (cuando la cuenta ya está vendida)
+function copiarMensajeWhatsApp() {
+    const mensaje = `¡Hola! 🎉
 
-📱 *Datos de tu cuenta ${plataforma}:*
+📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
 
-🏷️ *Plataforma:* ${plataforma}
-📧 *Email:* ${email}
-🔑 *Contraseña:* ${password}
-💰 *Precio:* $${precio}
-📅 *Vencimiento:* ${fechaVencimiento}
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Fecha de Creación:* {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
+📅 *Vencimiento:* {{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') if cuenta.fecha_vencimiento else 'N/A' }}
 
 ✅ *Tu cuenta está lista para usar*
 
@@ -1002,109 +643,187 @@ function enviarWhatsAppVendida(cuentaId) {
 ¡Disfruta de tu cuenta! 🎬
 
 Si tienes alguna pregunta, no dudes en contactarnos.`;
-
-    // Codificar el mensaje para URL
-    const mensajeCodificado = encodeURIComponent(mensaje);
     
-    // Crear URL de WhatsApp
-    const numeroWhatsApp = whatsappComprador.replace('+', '');
-    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
-    
-    // Abrir WhatsApp en nueva pestaña
-    window.open(urlWhatsApp, '_blank');
-    
-    console.log('WhatsApp abierto para cuenta vendida:', mensaje);
-    
-    // Mostrar confirmación
-    alert(`WhatsApp abierto para ${nombreComprador}\nNúmero: ${whatsappComprador}\n\nEl mensaje ya está pre-formateado y listo para enviar.`);
+    navigator.clipboard.writeText(mensaje).then(function() {
+        alert('Mensaje de WhatsApp copiado al portapapeles');
+    }).catch(function() {
+        // Fallback para navegadores que no soportan clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = mensaje;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Mensaje de WhatsApp copiado al portapapeles');
+    });
 }
 
-// Función para recordar vencimiento de cuenta
-function recordarVencimiento(cuentaId) {
-    console.log('Recordando vencimiento de cuenta:', cuentaId);
-    
-    // Obtener datos de la cuenta vendida
-    const plataforma = '{{ cuenta.plataforma }}';
-    const email = '{{ cuenta.email }}';
-    const nombreComprador = '{{ cuenta.nombre_comprador }}';
-    const whatsappComprador = '{{ cuenta.whatsapp_comprador }}';
-    const fechaVencimiento = '{{ cuenta.fecha_vencimiento.strftime("%d/%m/%Y") if cuenta.fecha_vencimiento else "N/A" }}';
-    
-    // Verificar si la cuenta está vencida
-    const fechaVenc = '{{ cuenta.fecha_vencimiento.isoformat() if cuenta.fecha_vencimiento else "" }}';
-    const hoy = new Date();
-    const vencimiento = new Date(fechaVenc);
-    const diasRestantes = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
-    
-    let mensaje = '';
-    let titulo = '';
-    
-    if (diasRestantes > 0) {
-        // Cuenta aún válida
-        titulo = 'Recordatorio de Vencimiento';
-        mensaje = `¡Hola ${nombreComprador}! ⏰
-
-📱 *Recordatorio de tu cuenta ${plataforma}:*
-
-🏷️ *Plataforma:* ${plataforma}
-📧 *Email:* ${email}
-📅 *Vencimiento:* ${fechaVencimiento}
-
-⚠️ *Tu cuenta vence en ${diasRestantes} día${diasRestantes === 1 ? '' : 's'}*
-
-💡 *Recomendaciones:*
-• Renueva tu cuenta antes del vencimiento
-• Evita interrupciones en tu servicio
-• Mantén acceso continuo a ${plataforma}
-
-🔄 *¿Quieres renovar tu cuenta?*
-Contáctanos para más información.
-
-📱 *ID de la cuenta:* #{{ cuenta.id }}
-
-¡Gracias por tu confianza! 🙏`;
-        
-    } else {
-        // Cuenta vencida
-        titulo = 'Cuenta Vencida';
-        mensaje = `¡Hola ${nombreComprador}! ⚠️
-
-📱 *Tu cuenta ${plataforma} ha vencido:*
-
-🏷️ *Plataforma:* ${plataforma}
-📧 *Email:* ${email}
-📅 *Vencimiento:* ${fechaVencimiento}
-❌ *Estado:* VENCIDA
-
-🚨 *Tu cuenta ya no está activa*
-
-💡 *¿Qué puedes hacer?*
-• Renovar tu cuenta inmediatamente
-• Recuperar acceso a ${plataforma}
-• Evitar pérdida de datos/configuraciones
-
-🔄 *Renovación disponible:*
-Contáctanos para reactivar tu cuenta.
-
-📱 *ID de la cuenta:* #{{ cuenta.id }}
-
-¡No pierdas tu acceso! 🚀`;
+// Función para enviar WhatsApp al comprador (cuando la cuenta ya está vendida)
+function enviarWhatsAppComprador() {
+    // Verificar si hay información del comprador disponible
+    const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
+    if (!compradorInfo) {
+        alert('No hay información del comprador disponible');
+        return;
     }
     
+    // Extraer información del comprador del DOM
+    const nombreElement = compradorInfo.querySelector('div:nth-child(1)');
+    const whatsappElement = compradorInfo.querySelector('div:nth-child(2)');
+    const vencimientoElement = compradorInfo.querySelector('div:nth-child(3)');
+    
+    if (!nombreElement || !whatsappElement || !vencimientoElement) {
+        alert('Información del comprador incompleta');
+        return;
+    }
+    
+    const nombre = nombreElement.textContent.replace('Nombre:', '').trim();
+    const whatsapp = whatsappElement.textContent.replace('WhatsApp:', '').trim();
+    const vencimiento = vencimientoElement.textContent.replace('Vencimiento:', '').trim();
+    
+    // Verificar que no sea N/A
+    if (nombre === 'N/A' || whatsapp === 'N/A' || vencimiento === 'N/A') {
+        alert('La información del comprador no está completa');
+        return;
+    }
+    
+    const mensaje = `¡Hola ${nombre}! 🎉
+
+📱 *Recordatorio de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+🔑 *Contraseña:* {{ cuenta.password }}
+📅 *Vencimiento:* ${vencimiento}
+
+✅ *Tu cuenta sigue activa*
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+¡Disfruta de tu cuenta! 🎬
+
+Si tienes alguna pregunta, no dudes en contactarnos.`;
+        
     // Codificar el mensaje para URL
     const mensajeCodificado = encodeURIComponent(mensaje);
     
     // Crear URL de WhatsApp
-    const numeroWhatsApp = whatsappComprador.replace('+', '');
+    const numeroWhatsApp = whatsapp.replace('+', '');
     const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
     
     // Abrir WhatsApp en nueva pestaña
     window.open(urlWhatsApp, '_blank');
-    
-    console.log('WhatsApp abierto para recordatorio:', mensaje);
-    
-    // Mostrar confirmación
-    alert(`${titulo}\n\nWhatsApp abierto para ${nombreComprador}\nNúmero: ${whatsappComprador}\n\nEl mensaje de recordatorio está listo para enviar.`);
 }
+
+// Función para recordar vencimiento
+function recordarVencimiento() {
+    // Verificar si hay información del comprador disponible
+    const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
+    if (!compradorInfo) {
+        alert('No hay información del comprador disponible');
+        return;
+    }
+    
+    // Extraer información del comprador del DOM
+    const nombreElement = compradorInfo.querySelector('div:nth-child(1)');
+    const whatsappElement = compradorInfo.querySelector('div:nth-child(2)');
+    const vencimientoElement = compradorInfo.querySelector('div:nth-child(3)');
+    
+    if (!nombreElement || !whatsappElement || !vencimientoElement) {
+        alert('Información del comprador incompleta');
+        return;
+    }
+    
+    const nombre = nombreElement.textContent.replace('Nombre:', '').trim();
+    const whatsapp = whatsappElement.textContent.replace('WhatsApp:', '').trim();
+    const vencimiento = vencimientoElement.textContent.replace('Vencimiento:', '').trim();
+    
+    // Verificar que no sea N/A
+    if (nombre === 'N/A' || whatsapp === 'N/A' || vencimiento === 'N/A') {
+        alert('La información del comprador no está completa');
+        return;
+    }
+    
+    const mensaje = `¡Hola ${nombre}! ⏰
+
+📱 *Recordatorio de vencimiento de tu cuenta {{ cuenta.plataforma }}:*
+
+🏷️ *Plataforma:* {{ cuenta.plataforma }}
+📧 *Email:* {{ cuenta.email }}
+📅 *Vencimiento:* ${vencimiento}
+
+⚠️ *Tu cuenta vence pronto*
+
+📱 *ID de la cuenta:* #{{ cuenta.id }}
+
+¿Necesitas renovar tu cuenta? ¡Contáctanos! 📞`;
+        
+    // Codificar el mensaje para URL
+    const mensajeCodificado = encodeURIComponent(mensaje);
+    
+    // Crear URL de WhatsApp
+    const numeroWhatsApp = whatsapp.replace('+', '');
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+    
+    // Abrir WhatsApp en nueva pestaña
+    window.open(urlWhatsApp, '_blank');
+}
+
+// Función para confirmar eliminación
+function confirmarEliminacion() {
+    if (confirm('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer.')) {
+        document.getElementById('formEliminar').submit();
+    }
+}
+
+// Establecer fecha mínima para fecha de vencimiento
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const fechaVencimiento = document.getElementById('fecha_vencimiento');
+    if (fechaVencimiento) {
+        fechaVencimiento.min = today;
+    }
+    
+    // Configurar formulario de venta
+    const formVenta = document.getElementById('formVenta');
+    if (formVenta) {
+        formVenta.addEventListener('submit', function(e) {
+            const nombre = document.getElementById('nombre_comprador').value.trim();
+            const whatsapp = document.getElementById('whatsapp_comprador').value.trim();
+            const fecha = document.getElementById('fecha_vencimiento').value;
+            
+            if (!nombre || !whatsapp || !fecha) {
+                e.preventDefault();
+                alert('Por favor completa todos los campos obligatorios');
+                return false;
+            }
+            
+            // Validar formato de WhatsApp (debe incluir + y código de país)
+            if (!whatsapp.startsWith('+')) {
+                e.preventDefault();
+                alert('El número de WhatsApp debe incluir el código del país (ej: +34612345678)');
+                return false;
+            }
+            
+            // Validar que la fecha de vencimiento sea futura
+            const fechaVencimiento = new Date(fecha);
+            const hoy = new Date();
+            if (fechaVencimiento <= hoy) {
+                e.preventDefault();
+                alert('La fecha de vencimiento debe ser futura');
+                return false;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres marcar esta cuenta como vendida?')) {
+                // Cerrar modal antes de enviar
+                cerrarModal();
+                return true;
+            } else {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

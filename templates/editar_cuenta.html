@@ -18,7 +18,7 @@
                     <i class="fas fa-arrow-left me-2"></i>
                     Volver
                 </a>
-                <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-primary">
+                <a href="{{ url_for('cuentas') }}" class="btn btn-outline-primary">
                     <i class="fas fa-list me-2"></i>
                     Ver Todas
                 </a>
@@ -93,8 +93,7 @@
                         <!-- Contraseña -->
                         <div class="col-md-6">
                             <label for="password" class="form-label">
-                                <i class="fas fa-lock me-1"></i>
-                                Contraseña <span class="text-danger">*</span>
+                                <i class="fas fa-lock me-1"></i>Contraseña *
                             </label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="password" name="password" 
@@ -110,8 +109,7 @@
                         <!-- Precio -->
                         <div class="col-md-6">
                             <label for="precio" class="form-label">
-                                <i class="fas fa-dollar-sign me-1"></i>
-                                Precio <span class="text-danger">*</span>
+                                <i class="fas fa-dollar-sign me-1"></i>Precio *
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
@@ -120,17 +118,42 @@
                             </div>
                             <div class="form-text">Precio de venta de la cuenta</div>
                         </div>
+                    </div>
 
+                    <div class="row">
                         <!-- Fecha de Compra -->
                         <div class="col-md-6">
                             <label for="fecha_compra" class="form-label">
-                                <i class="fas fa-calendar me-1"></i>
-                                Fecha de Compra <span class="text-danger">*</span>
+                                <i class="fas fa-calendar me-1"></i>Fecha de Compra *
                             </label>
-                            <input type="date" class="form-control" id="fecha_compra" name="fecha_compra" 
+                            <input type="date" class="form-control" id="fecha_compra" name="fecha_compra"
                                    value="{{ cuenta.fecha_compra.strftime('%Y-%m-%d') }}" required>
                             <div class="form-text">Fecha cuando adquiriste la cuenta</div>
                         </div>
+
+                        <!-- Fecha de Creación -->
+                        <div class="col-md-6">
+                            <label for="fecha_creacion" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>Fecha de Creación
+                            </label>
+                            <input type="text" class="form-control" id="fecha_creacion" name="fecha_creacion" 
+                                   value="{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}" 
+                                   readonly>
+                            <div class="form-text">Fecha cuando se agregó la cuenta</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Notas Adicionales -->
+                        <div class="col-12">
+                            <label for="notas" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Notas Adicionales
+                            </label>
+                            <textarea class="form-control" id="notas" name="notas" rows="3" 
+                                      placeholder="Información adicional sobre la cuenta (opcional)">{{ cuenta.notas or '' }}</textarea>
+                            <div class="form-text">Detalles como calidad, número de pantallas, etc.</div>
+                        </div>
+                    </div>
 
                         <!-- Estado -->
                         <div class="col-md-6">
@@ -152,17 +175,6 @@
                             <div class="form-text">El estado se gestiona desde la vista de detalles</div>
                         </div>
 
-                        <!-- Notas -->
-                        <div class="col-12">
-                            <label for="notas" class="form-label">
-                                <i class="fas fa-sticky-note me-1"></i>
-                                Notas Adicionales
-                            </label>
-                            <textarea class="form-control" id="notas" name="notas" rows="3" 
-                                      placeholder="Información adicional sobre la cuenta (opcional)">{{ cuenta.notas or '' }}</textarea>
-                            <div class="form-text">Detalles como calidad, número de pantallas, etc.</div>
-                        </div>
-
                         <!-- Información del Sistema -->
                         <div class="col-12">
                             <hr class="my-4">
@@ -177,7 +189,7 @@
                                     <label class="form-label fw-bold text-muted">Fecha de Creación</label>
                                     <div class="form-control-plaintext">
                                         <i class="fas fa-clock text-muted me-2"></i>
-                                        {{ cuenta.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                        {{ cuenta.fecha_creacion.strftime('%d/%m/%Y %H:%M') if cuenta.fecha_creacion else 'N/A' }}
                                     </div>
                                 </div>
                                 {% if cuenta.fecha_venta %}
@@ -285,9 +297,10 @@ document.querySelector('form').addEventListener('submit', function(e) {
         return false;
     }
     
-    if (parseFloat(precio) <= 0) {
+    if (!precio) {
         e.preventDefault();
-        alert('El precio debe ser mayor a 0');
+        alert('Por favor ingresa el precio de la cuenta');
+        document.getElementById('precio').focus();
         return false;
     }
     

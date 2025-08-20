@@ -32,13 +32,13 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="GET" action="{{ url_for('listar_cuentas') }}" class="row g-3">
+                <form method="GET" action="{{ url_for('cuentas') }}" class="row g-3">
                     <div class="col-md-4">
                         <label for="estado" class="form-label">Estado</label>
                         <select class="form-select" id="estado" name="estado">
                             <option value="">Todos los estados</option>
-                            <option value="disponible" {% if filtro_estado == 'disponible' %}selected{% endif %}>Disponible</option>
-                            <option value="vendida" {% if filtro_estado == 'vendida' %}selected{% endif %}>Vendida</option>
+                            <option value="Disponible" {% if filtro_estado == 'Disponible' %}selected{% endif %}>Disponible</option>
+                            <option value="Vendida" {% if filtro_estado == 'Vendida' %}selected{% endif %}>Vendida</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -58,7 +58,7 @@
                                 <i class="fas fa-search me-2"></i>
                                 Filtrar
                             </button>
-                            <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-secondary">
+                            <a href="{{ url_for('cuentas') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i>
                                 Limpiar
                             </a>
@@ -119,17 +119,19 @@
                                         <span class="badge bg-success">${{ "%.2f"|format(cuenta.precio) }}</span>
                                     </td>
                                     <td>
-                                        {% if cuenta.estado == 'disponible' %}
+                                        {% if cuenta.estado == 'Disponible' %}
                                             <span class="badge badge-disponible">
                                                 <i class="fas fa-check me-1"></i>Disponible
                                             </span>
-                                        {% else %}
+                                        {% elif cuenta.estado == 'Vendida' %}
                                             <span class="badge badge-vendida">
                                                 <i class="fas fa-dollar-sign me-1"></i>Vendida
                                             </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ cuenta.estado }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</td>
                                     <td>
                                         {% if cuenta.fecha_venta %}
                                             <span class="text-success">{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
@@ -149,7 +151,7 @@
                                                title="Editar">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            {% if cuenta.estado == 'disponible' %}
+                                            {% if cuenta.estado == 'Disponible' %}
                                             <form method="POST" action="{{ url_for('vender_cuenta', id=cuenta.id) }}" 
                                                   class="d-inline" 
                                                   onsubmit="return confirm('¿Marcar esta cuenta como vendida?')">
@@ -177,7 +179,7 @@
                         <i class="fas fa-search fa-3x mb-3"></i>
                         <h4>No se encontraron cuentas</h4>
                         <p>No hay cuentas que coincidan con los filtros aplicados</p>
-                        <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-primary me-2">
+                        <a href="{{ url_for('cuentas') }}" class="btn btn-outline-primary me-2">
                             <i class="fas fa-list me-2"></i>
                             Ver todas
                         </a>
@@ -206,7 +208,7 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-success">{{ cuentas|selectattr('estado', 'equalto', 'disponible')|list|length }}</h3>
+                <h3 class="text-success">{{ cuentas|selectattr('estado', 'equalto', 'Disponible')|list|length }}</h3>
                 <p class="text-muted mb-0">Disponibles</p>
             </div>
         </div>
@@ -214,7 +216,7 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-warning">{{ cuentas|selectattr('estado', 'equalto', 'vendida')|list|length }}</h3>
+                <h3 class="text-warning">{{ cuentas|selectattr('estado', 'equalto', 'Vendida')|list|length }}</h3>
                 <p class="text-muted mb-0">Vendidas</p>
             </div>
         </div>
@@ -222,8 +224,8 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-info">${{ "%.2f"|format(cuentas|selectattr('estado', 'equalto', 'disponible')|sum(attribute='precio')) }}</h3>
-                <p class="text-muted mb-0">Valor total</p>
+                <h3 class="text-info">{{ cuentas|selectattr('estado', 'equalto', 'Disponible')|list|length }}</h3>
+                <p class="text-muted mb-0">Disponibles</p>
             </div>
         </div>
     </div>
@@ -232,6 +234,44 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Estilos para los badges del estado */
+.badge-disponible {
+    background-color: #198754 !important;
+    color: white !important;
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+.badge-vendida {
+    background-color: #dc3545 !important;
+    color: white !important;
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+/* Mejorar la apariencia de la tabla */
+.table th {
+    background-color: #6f42c1 !important;
+    color: white !important;
+    border-color: #6f42c1 !important;
+    font-weight: 600 !important;
+}
+
+.table td {
+    vertical-align: middle !important;
+}
+
+/* Estilos para los botones de acción */
+.btn-group .btn {
+    margin-right: 2px !important;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0 !important;
+}
+</style>
+
 <script>
 // Auto-submit form when filters change
 document.getElementById('estado').addEventListener('change', function() {

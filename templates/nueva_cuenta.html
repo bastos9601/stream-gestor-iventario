@@ -11,18 +11,18 @@
                     <i class="fas fa-plus me-2"></i>
                     Nueva Cuenta
                 </h1>
-                <p class="lead text-muted">Agrega una nueva cuenta al inventario</p>
+                <p class="lead text-muted">Agrega una nueva cuenta de streaming al inventario</p>
             </div>
-            <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('cuentas') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>
-                Volver
+                Volver a Cuentas
             </a>
         </div>
     </div>
 </div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
+<div class="row">
+    <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
@@ -31,121 +31,117 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('nueva_cuenta') }}">
-                    <div class="row g-3">
-                        <!-- Plataforma -->
+                <form method="POST" action="{{ url_for('nueva_cuenta') }}" id="nuevaCuentaForm">
+                    <div class="row">
+                        <!-- Columna Izquierda -->
                         <div class="col-md-6">
-                            <label for="plataforma" class="form-label">
-                                <i class="fas fa-tv me-1"></i>
-                                Plataforma <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="plataforma" name="plataforma" required onchange="togglePlataformaPersonalizada()">
-                                <option value="">Selecciona una plataforma</option>
-                                <option value="Netflix">Netflix</option>
-                                <option value="Disney+">Disney+</option>
-                                <option value="HBO Max">HBO Max</option>
-                                <option value="Amazon Prime Video">Amazon Prime Video</option>
-                                <option value="Apple TV+">Apple TV+</option>
-                                <option value="Paramount+">Paramount+</option>
-                                <option value="Peacock">Peacock</option>
-                                <option value="Hulu">Hulu</option>
-                                <option value="Crunchyroll">Crunchyroll</option>
-                                <option value="Funimation">Funimation</option>
-                                <option value="YouTube Premium">YouTube Premium</option>
-                                <option value="Spotify Premium">Spotify Premium</option>
-                                <option value="Tidal">Tidal</option>
-                                <option value="Deezer">Deezer</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                            <div class="form-text">Selecciona la plataforma de streaming</div>
-                            
-                            <!-- Campo para plataforma personalizada (oculto por defecto) -->
-                            <div id="plataformaPersonalizada" class="mt-2" style="display: none;">
-                                <label for="plataforma_otro" class="form-label">
-                                    <i class="fas fa-plus me-1"></i>
-                                    Nombre de la Plataforma <span class="text-danger">*</span>
+                            <!-- Plataforma -->
+                            <div class="mb-3">
+                                <label for="plataforma" class="form-label">
+                                    <i class="fas fa-tv me-1"></i>Plataforma *
                                 </label>
-                                <input type="text" class="form-control" id="plataforma_otro" name="plataforma_otro" 
-                                       placeholder="Ej: Twitch Premium, Shudder, etc." maxlength="50">
-                                <div class="form-text">Escribe el nombre de la plataforma personalizada</div>
+                                <select class="form-select" id="plataforma" name="plataforma" required onchange="togglePlataformaPersonalizada()">
+                                    <option value="">Selecciona una plataforma</option>
+                                    <option value="Netflix">Netflix</option>
+                                    <option value="Disney+">Disney+</option>
+                                    <option value="HBO Max">HBO Max</option>
+                                    <option value="Amazon Prime">Amazon Prime</option>
+                                    <option value="Paramount+">Paramount+</option>
+                                    <option value="Apple TV+">Apple TV+</option>
+                                    <option value="Hulu">Hulu</option>
+                                    <option value="Peacock">Peacock</option>
+                                    <option value="Crunchyroll">Crunchyroll</option>
+                                    <option value="Funimation">Funimation</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                                <div class="form-text">Selecciona la plataforma de streaming</div>
+                                
+                                <!-- Campo para plataforma personalizada (oculto por defecto) -->
+                                <div id="plataformaPersonalizada" class="mt-2" style="display: none;">
+                                    <label for="plataforma_otro" class="form-label">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Nombre de la Plataforma *
+                                    </label>
+                                    <input type="text" class="form-control" id="plataforma_otro" name="plataforma_otro" 
+                                           placeholder="Ej: Twitch Premium, Shudder, etc." maxlength="50">
+                                    <div class="form-text">Escribe el nombre de la plataforma personalizada</div>
+                                </div>
+                            </div>
+
+                            <!-- Contraseña -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-1"></i>Contraseña *
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Contraseña de la cuenta" required>
+                                    <button class="btn btn-outline-secondary" type="button" 
+                                            onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Contraseña de acceso a la cuenta</div>
+                            </div>
+
+                            <!-- Fecha de Compra -->
+                            <div class="mb-3">
+                                <label for="fecha_compra" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Fecha de Compra *
+                                </label>
+                                <input type="date" class="form-control" id="fecha_compra" name="fecha_compra" 
+                                       value="{{ today }}" required>
+                                <div class="form-text">Fecha cuando adquiriste la cuenta</div>
+                            </div>
+
+                            <!-- Notas Adicionales -->
+                            <div class="mb-3">
+                                <label for="notas" class="form-label">
+                                    <i class="fas fa-sticky-note me-1"></i>Notas Adicionales
+                                </label>
+                                <textarea class="form-control" id="notas" name="notas" rows="3" 
+                                          placeholder="Información adicional sobre la cuenta (opcional)"></textarea>
+                                <div class="form-text">Detalles como calidad, número de pantallas, etc.</div>
                             </div>
                         </div>
 
-                        <!-- Email -->
+                        <!-- Columna Derecha -->
                         <div class="col-md-6">
-                            <label for="email" class="form-label">
-                                <i class="fas fa-envelope me-1"></i>
-                                Email <span class="text-danger">*</span>
-                            </label>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   placeholder="usuario@ejemplo.com" required>
-                            <div class="form-text">Email de acceso a la cuenta</div>
-                        </div>
-
-                        <!-- Contraseña -->
-                        <div class="col-md-6">
-                            <label for="password" class="form-label">
-                                <i class="fas fa-lock me-1"></i>
-                                Contraseña <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password" name="password" 
-                                       placeholder="Contraseña de la cuenta" required>
-                                <button class="btn btn-outline-secondary" type="button" 
-                                        onclick="togglePassword()">
-                                    <i class="fas fa-eye" id="toggleIcon"></i>
-                                </button>
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email *
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="usuario@ejemplo.com" required>
+                                <div class="form-text">Email de acceso a la cuenta</div>
                             </div>
-                            <div class="form-text">Contraseña de acceso a la cuenta</div>
-                        </div>
 
-                        <!-- Precio -->
-                        <div class="col-md-6">
-                            <label for="precio" class="form-label">
-                                <i class="fas fa-dollar-sign me-1"></i>
-                                Precio <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" id="precio" name="precio" 
-                                       placeholder="0.00" step="0.01" min="0" required>
+                            <!-- Precio -->
+                            <div class="mb-3">
+                                <label for="precio" class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>Precio *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="precio" name="precio" 
+                                           placeholder="0.00" step="0.01" min="0" required>
+                                </div>
+                                <div class="form-text">Precio de venta de la cuenta</div>
                             </div>
-                            <div class="form-text">Precio de venta de la cuenta</div>
                         </div>
-
-                        <!-- Fecha de Compra -->
-                        <div class="col-md-6">
-                            <label for="fecha_compra" class="form-label">
-                                <i class="fas fa-calendar me-1"></i>
-                                Fecha de Compra <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" class="form-control" id="fecha_compra" name="fecha_compra" 
-                                   value="{{ today }}" required>
-                            <div class="form-text">Fecha cuando adquiriste la cuenta</div>
-                        </div>
-
-                        <!-- Notas -->
-                        <div class="col-12">
-                            <label for="notas" class="form-label">
-                                <i class="fas fa-sticky-note me-1"></i>
-                                Notas Adicionales
-                            </label>
-                            <textarea class="form-control" id="notas" name="notas" rows="3" 
-                                      placeholder="Información adicional sobre la cuenta (opcional)"></textarea>
-                            <div class="form-text">Detalles como calidad, número de pantallas, etc.</div>
-                        </div>
-
-                        <!-- Botones -->
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="row">
                         <div class="col-12">
                             <hr class="my-4">
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="{{ url_for('listar_cuentas') }}" class="btn btn-outline-secondary me-md-2">
-                                    <i class="fas fa-times me-2"></i>
-                                    Cancelar
+                                <a href="{{ url_for('cuentas') }}" class="btn btn-outline-secondary me-md-2">
+                                    <i class="fas fa-times me-2"></i>Cancelar
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>
-                                    Guardar Cuenta
+                                    <i class="fas fa-save me-2"></i>Guardar Cuenta
                                 </button>
                             </div>
                         </div>
@@ -154,39 +150,61 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- Help Section -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-question-circle me-2"></i>
-                    Consejos para Agregar Cuentas
-                </h5>
+    
+    <div class="col-lg-4">
+        <!-- Información de Plataformas -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Plataformas Soportadas
+                </h6>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-lightbulb text-warning me-2"></i>Mejores Prácticas</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="fas fa-check text-success me-2"></i>Verifica que la cuenta funcione antes de agregarla</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Usa descripciones claras en las notas</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Establece precios competitivos</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Mantén un inventario actualizado</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle text-info me-2"></i>Información Útil</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="fas fa-arrow-right text-primary me-2"></i>Las cuentas se marcan como "disponible" por defecto</li>
-                            <li><i class="fas fa-arrow-right text-primary me-2"></i>Puedes editar la información después</li>
-                            <li><i class="fas fa-arrow-right text-primary me-2"></i>El email debe ser único en el sistema</li>
-                            <li><i class="fas fa-arrow-right text-primary me-2"></i>Las fechas se registran automáticamente</li>
-                        </ul>
-                    </div>
-                </div>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-tv text-primary me-1"></i>
+                        <strong>Streaming Principal:</strong> Netflix, Disney+, HBO Max
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-film text-success me-1"></i>
+                        <strong>Películas:</strong> Amazon Prime, Paramount+
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-mobile-alt text-warning me-1"></i>
+                        <strong>Móvil:</strong> Apple TV+, Hulu, Peacock
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-gamepad text-danger me-1"></i>
+                        <strong>Anime:</strong> Crunchyroll, Funimation
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Consejos de Seguridad -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Consejos de Seguridad
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        Usa contraseñas únicas para cada cuenta
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        No compartas credenciales por mensajes
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        Cambia contraseñas regularmente
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -239,16 +257,15 @@ document.querySelector('form').addEventListener('submit', function(e) {
 function togglePlataformaPersonalizada() {
     const plataformaSelect = document.getElementById('plataforma');
     const plataformaPersonalizada = document.getElementById('plataformaPersonalizada');
-    const plataformaOtro = document.getElementById('plataforma_otro');
     
     if (plataformaSelect.value === 'Otro') {
         plataformaPersonalizada.style.display = 'block';
-        plataformaOtro.required = true;
-        plataformaOtro.focus();
+        document.getElementById('plataforma_otro').required = true;
+        document.getElementById('plataforma_otro').focus();
     } else {
         plataformaPersonalizada.style.display = 'none';
-        plataformaOtro.required = false;
-        plataformaOtro.value = '';
+        document.getElementById('plataforma_otro').required = false;
+        document.getElementById('plataforma_otro').value = '';
     }
 }
 

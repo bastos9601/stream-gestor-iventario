@@ -8,34 +8,67 @@
         <h1 class="mb-4">
             <i class="fas fa-tachometer-alt me-2"></i>
             Dashboard
+            {% if current_user.es_admin %}
+                <span class="badge bg-danger ms-2">Administrador</span>
+            {% endif %}
         </h1>
-        <p class="lead text-muted">Resumen general de tu inventario de cuentas de streaming</p>
+        <p class="lead text-muted">
+            {% if current_user.es_admin %}
+                Resumen general del sistema completo
+            {% else %}
+                Resumen de tu inventario de cuentas de streaming
+            {% endif %}
+        </p>
     </div>
 </div>
 
 <!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-lg-3 col-md-6 mb-3">
+<div class="row mb-4 stats-row">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="stats-card text-center">
             <div class="stats-number">{{ total_cuentas }}</div>
             <div class="stats-label">Total de Cuentas</div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
             <div class="stats-number">{{ cuentas_disponibles }}</div>
             <div class="stats-label">Disponibles</div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
             <div class="stats-number">{{ cuentas_vendidas }}</div>
             <div class="stats-label">Vendidas</div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-            <div class="stats-number">${{ "%.2f"|format(valor_total) }}</div>
+            <div class="stats-number">
+                {% if current_user.es_admin %}
+                    {{ usuarios_stats|length if usuarios_stats else 0 }}
+                {% else %}
+                    {{ ultimas_cuentas|length }}
+                {% endif %}
+            </div>
+            <div class="stats-label">
+                {% if current_user.es_admin %}
+                    Usuarios Activos
+                {% else %}
+                    Mis Cuentas
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+        <div class="stats-card text-center valor-inventario">
+            <div class="stats-number">
+                {% if current_user.es_admin %}
+                    ${{ "%.2f"|format(valor_inventario_admin|float) if valor_inventario_admin else "0.00" }}
+                {% else %}
+                    ${{ "%.2f"|format(valor_inventario_usuario|float) if valor_inventario_usuario else "0.00" }}
+                {% endif %}
+            </div>
             <div class="stats-label">Valor del Inventario</div>
         </div>
     </div>
@@ -73,21 +106,23 @@
                         <i class="fas fa-plus me-2"></i>
                         Agregar Cuenta
                     </a>
-                    <a href="{{ url_for('listar_cuentas') }}" class="btn btn-success">
+                    <a href="{{ url_for('cuentas') }}" class="btn btn-success">
                         <i class="fas fa-list me-2"></i>
                         Ver Todas las Cuentas
                     </a>
-                    <a href="{{ url_for('listar_cuentas', estado='disponible') }}" class="btn btn-info">
-                        <i class="fas fa-check-circle me-2"></i>
-                        Solo Disponibles
+                    <a href="{{ url_for('cuentas') }}?plataforma=" class="btn btn-info">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtrar por Plataforma
                     </a>
-                    <a href="https://gestor-de-cuentas-hplay.onrender.com/dashboard" target="_blank" class="btn btn-warning">
-                        <i class="fas fa-external-link-alt me-2"></i>
-                        Dashboard Externo
+                    {% if current_user.es_admin %}
+                    <a href="{{ url_for('usuarios') }}" class="btn btn-warning">
+                        <i class="fas fa-users me-2"></i>
+                        Gestionar Usuarios
                     </a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres cerrar sesión?')">
-                        <i class="fas fa-sign-out-alt me-2"></i>
-                        Cerrar Sesión
+                    {% endif %}
+                    <a href="{{ url_for('perfil') }}" class="btn btn-secondary">
+                        <i class="fas fa-user me-2"></i>
+                        Mi Perfil
                     </a>
                 </div>
             </div>
@@ -102,7 +137,11 @@
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-clock me-2"></i>
-                    Últimas Cuentas Agregadas
+                    {% if current_user.es_admin %}
+                        Últimas Cuentas Agregadas (Todos los Usuarios)
+                    {% else %}
+                        Mis Últimas Cuentas Agregadas
+                    {% endif %}
                 </h5>
             </div>
             <div class="card-body">
@@ -113,9 +152,11 @@
                                 <tr>
                                     <th>Plataforma</th>
                                     <th>Email</th>
-                                    <th>Precio</th>
                                     <th>Estado</th>
                                     <th>Fecha</th>
+                                    {% if current_user.es_admin %}
+                                    <th>Usuario</th>
+                                    {% endif %}
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -135,20 +176,24 @@
                                         </button>
                                     </td>
                                     <td>
-                                        <span class="badge bg-success">${{ "%.2f"|format(cuenta.precio) }}</span>
-                                    </td>
-                                    <td>
-                                        {% if cuenta.estado == 'disponible' %}
-                                            <span class="badge badge-disponible">
+                                        {% if cuenta.estado == 'Disponible' %}
+                                            <span class="badge bg-success">
                                                 <i class="fas fa-check me-1"></i>Disponible
                                             </span>
                                         {% else %}
-                                            <span class="badge badge-vendida">
+                                            <span class="badge bg-warning">
                                                 <i class="fas fa-dollar-sign me-1"></i>Vendida
                                             </span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ cuenta.fecha_compra.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
+                                    </td>
+                                    {% if current_user.es_admin %}
+                                    <td>
+                                        <span class="badge bg-info">{{ cuenta.usuario.username if cuenta.usuario else 'N/A' }}</span>
+                                    </td>
+                                    {% endif %}
                                     <td>
                                         <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
                                            class="btn btn-sm btn-primary">
@@ -203,6 +248,54 @@
 </div>
 {% endif %}
 
+<!-- User Statistics (Admin Only) -->
+{% if current_user.es_admin and usuarios_stats %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Estadísticas por Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Total Cuentas</th>
+                                <th>Disponibles</th>
+                                <th>Vendidas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in usuarios_stats %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-user me-2"></i>
+                                    {{ stat.username }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ stat.total_cuentas }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ stat.cuentas_disponibles }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">{{ stat.cuentas_vendidas }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}
 
@@ -260,15 +353,30 @@ ctx.textAlign = 'center';
 ctx.fillText('No hay datos para mostrar', 200, 100);
 {% endif %}
 
-// Auto-refresh statistics every 30 seconds
-setInterval(function() {
-    fetch('/api/estadisticas')
-        .then(response => response.json())
-        .then(data => {
-            // Update statistics (you can implement this if needed)
-            console.log('Statistics updated:', data);
-        })
-        .catch(error => console.error('Error updating statistics:', error));
-}, 30000);
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed top-0 end-0 p-3';
+        toast.style.zIndex = '1050';
+        toast.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header">
+                    <strong class="me-auto">Copiado</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    Texto copiado al portapapeles
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 3000);
+    });
+}
 </script>
 {% endblock %}

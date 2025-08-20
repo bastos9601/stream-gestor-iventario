@@ -38,20 +38,46 @@
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 9998 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            transition: all 0.3s ease !important;
         }
         
-        .navbar-brand {
-            font-weight: bold;
-            color: var(--primary-color) !important;
+        /* Asegurar que el navbar tenga altura consistente */
+        .navbar-brand, .navbar-nav .nav-link {
+            padding: 0.5rem 1rem !important;
         }
         
+        /* Mejorar la apariencia del navbar fijo */
         .navbar-nav .nav-link {
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .navbar-nav .nav-link:hover {
             color: var(--primary-color) !important;
             transform: translateY(-1px);
+        }
+        
+        /* Efecto de línea debajo del enlace activo */
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
         }
         
         .user-info {
@@ -99,103 +125,42 @@
             color: white;
         }
         
-        .user-details .row {
-            padding: 8px 0;
-            border-bottom: 1px solid #f8f9fa;
-        }
-        
-        .user-details .row:last-child {
-            border-bottom: none;
-        }
-        
-        .form-text {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-top: 0.25rem;
-        }
-        
-        .main-container {
+        .main-content {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             margin: 20px;
             padding: 30px;
-            backdrop-filter: blur(10px);
+            min-height: calc(100vh - 140px);
         }
         
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
         
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
         
-        .card-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            border: none;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border: none;
+        .btn {
             border-radius: 10px;
-            padding: 10px 20px;
             font-weight: 600;
             transition: all 0.3s ease;
         }
         
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #059669);
-            border: none;
-            border-radius: 10px;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger-color), #dc2626);
-            border: none;
-            border-radius: 10px;
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning-color), #d97706);
-            border: none;
-            border-radius: 10px;
-        }
-        
-        .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .stats-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .stats-label {
-            font-size: 1rem;
-            opacity: 0.9;
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
         .table {
-            border-radius: 15px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
         
         .table thead th {
@@ -205,128 +170,256 @@
             font-weight: 600;
         }
         
-        .form-control, .form-select {
+        .badge {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .alert {
             border-radius: 10px;
-            border: 2px solid #e5e7eb;
-            padding: 12px 15px;
+            border: none;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
             transition: all 0.3s ease;
         }
         
-        .form-control:focus, .form-select:focus {
+        .form-control:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
         }
         
-        .alert {
-            border-radius: 15px;
+        .dropdown-menu {
+            border-radius: 10px;
             border: none;
-            padding: 15px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            z-index: 9999 !important;
+            position: absolute !important;
         }
         
-        .alert-success {
-            background: linear-gradient(135deg, var(--success-color), #059669);
+        .dropdown-item {
+            border-radius: 8px;
+            margin: 2px 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--primary-color);
             color: white;
+            transform: translateX(5px);
         }
         
-        .alert-danger {
-            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        /* Asegurar que el dropdown del usuario esté por encima de todo */
+        .navbar-nav .dropdown {
+            position: relative;
+        }
+        
+        .navbar-nav .dropdown-menu {
+            z-index: 99999 !important;
+            position: absolute !important;
+            top: 100% !important;
+            right: 0 !important;
+            left: auto !important;
+            min-width: 200px;
+        }
+        
+        /* Estilos para el dashboard */
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
-        .badge {
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 0.875rem;
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
         
-        .badge-disponible {
-            background: linear-gradient(135deg, var(--success-color), #059669);
-            color: white;
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1;
         }
         
-        .badge-vendida {
-            background: linear-gradient(135deg, var(--danger-color), #dc2626);
-            color: white;
+        .stats-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            text-align: center;
+            line-height: 1.2;
         }
         
-        /* Responsive adjustments */
+        /* Mejorar la distribución de las tarjetas */
+        .row.stats-row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        
+        .row.stats-row > [class*="col-"] {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        /* Asegurar que las tarjetas tengan la misma altura */
+        .stats-card {
+            height: 100%;
+            min-height: 140px;
+        }
+        
+        /* Responsive para diferentes tamaños de pantalla */
+        @media (min-width: 1400px) {
+            .stats-card {
+                padding: 25px 20px;
+                min-height: 160px;
+            }
+            .stats-number {
+                font-size: 2.8rem;
+            }
+            .stats-label {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 1399px) and (min-width: 992px) {
+            .stats-card {
+                padding: 22px 18px;
+                min-height: 150px;
+            }
+            .stats-number {
+                font-size: 2.4rem;
+            }
+        }
+        
+        @media (max-width: 991px) and (min-width: 768px) {
+            .stats-card {
+                padding: 20px 16px;
+                min-height: 140px;
+            }
+            .stats-number {
+                font-size: 2.2rem;
+            }
+            .stats-label {
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .stats-card {
+                padding: 18px 15px;
+                min-height: 130px;
+            }
+            .stats-number {
+                font-size: 2rem;
+            }
+            .stats-label {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Estilos específicos para la tarjeta de valor del inventario */
+        .stats-card.valor-inventario {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+        }
+        
+        .stats-card.valor-inventario .stats-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stats-card.valor-inventario .stats-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Mejorar el espaciado entre tarjetas */
+        .stats-row .col-xl-2,
+        .stats-row .col-lg-3,
+        .stats-row .col-md-4,
+        .stats-row .col-sm-6 {
+            margin-bottom: 20px;
+        }
+        
+        /* Asegurar que las tarjetas se vean bien en pantallas extra grandes */
+        @media (min-width: 1600px) {
+            .stats-row .col-xl-2 {
+                flex: 0 0 18%;
+                max-width: 18%;
+            }
+        }
+        
+        /* Ajustes para pantallas medianas */
+        @media (min-width: 1200px) and (max-width: 1599px) {
+            .stats-row .col-xl-2 {
+                flex: 0 0 20%;
+                max-width: 20%;
+            }
+        }
+        
+        /* Asegurar que el contenido principal no interfiera con el dropdown */
+        .main-content {
+            position: relative;
+            z-index: 1;
+            padding-top: 80px !important;
+            margin-top: 0 !important;
+        }
+        
+        /* Asegurar que las tarjetas y otros elementos no tengan z-index alto */
+        .card, .btn, .form-control, .table {
+            position: relative;
+            z-index: 1;
+        }
+        
         @media (max-width: 768px) {
-            .main-container {
+            .main-content {
                 margin: 10px;
                 padding: 20px;
+                padding-top: 100px !important;
+            }
+            
+            .navbar-nav {
+                text-align: center;
             }
             
             .stats-number {
                 font-size: 2rem;
             }
             
-            .table-responsive {
-                font-size: 0.875rem;
+            /* Ajustar navbar en móviles */
+            .navbar {
+                padding: 0.5rem 1rem !important;
             }
             
-            .btn {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .main-container {
-                margin: 5px;
-                padding: 15px;
+            .navbar-brand {
+                font-size: 1.1rem !important;
             }
             
-            .stats-card {
-                padding: 15px;
+            .navbar-nav .nav-link {
+                padding: 0.75rem 1rem !important;
             }
-            
-            .stats-number {
-                font-size: 1.75rem;
-            }
-        }
-        
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--secondary-color);
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-film me-2"></i>
-                Gestor de Streaming
+                <i class="fas fa-tv me-2"></i>Gestor de Streaming
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -337,12 +430,12 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">
-                            <i class="fas fa-home me-1"></i>Dashboard
+                            <i class="fas fa-home me-1"></i>Inicio
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('listar_cuentas') }}">
-                            <i class="fas fa-list me-1"></i>Cuentas
+                        <a class="nav-link" href="{{ url_for('cuentas') }}">
+                            <i class="fas fa-tv me-1"></i>Cuentas
                         </a>
                     </li>
                     <li class="nav-item">
@@ -350,138 +443,78 @@
                             <i class="fas fa-plus me-1"></i>Nueva Cuenta
                         </a>
                     </li>
-                    {% if current_user.es_admin %}
+                    
+                    {% if current_user.is_authenticated and current_user.es_admin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('listar_usuarios') }}">
+                        <a class="nav-link" href="{{ url_for('usuarios') }}">
                             <i class="fas fa-users me-1"></i>Usuarios
                         </a>
                     </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('apk') }}">
-                            <i class="fas fa-mobile-alt me-1"></i>APK
-                        </a>
-                    </li>
                 </ul>
                 
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle user-info" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ current_user.username }}
+                            {% if current_user.es_admin %}
+                                <span class="badge bg-danger ms-1">Admin</span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('perfil') }}">
+                                    <i class="fas fa-user-edit me-2"></i>Mi Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item logout-link" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
                     <li class="nav-item">
-                        <a class="nav-link user-info" href="{{ url_for('perfil') }}" title="Mi Perfil">
-                            <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link logout-link" href="{{ url_for('logout') }}" title="Cerrar Sesión" onclick="return confirmLogout()">
-                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                        </a>
-                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container-fluid">
-        <div class="main-container">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Page Content -->
-            {% block content %}{% endblock %}
-        </div>
+    <div class="main-content">
+        {% block content %}{% endblock %}
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Custom JavaScript -->
+    <!-- Custom Scripts -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- Service Worker Registration (temporarily disabled for debugging) -->
+    <!--
     <script>
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
-        
-        // Confirm delete actions
-        function confirmDelete(message = '¿Estás seguro de que quieres eliminar esta cuenta?') {
-            return confirm(message);
-        }
-        
-        // Confirm logout function
-        function confirmLogout() {
-            return confirm('¿Estás seguro de que quieres cerrar sesión?');
-        }
-        
-        // Copy to clipboard function
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                // Show success message
-                const toast = document.createElement('div');
-                toast.className = 'position-fixed top-0 end-0 p-3';
-                toast.style.zIndex = '1050';
-                toast.innerHTML = `
-                    <div class="toast show" role="alert">
-                        <div class="toast-header">
-                            <strong class="me-auto">Copiado</strong>
-                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                        </div>
-                        <div class="toast-body">
-                            Texto copiado al portapapeles
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 3000);
-            });
-        }
-        
-        // PWA Installation
-        let deferredPrompt;
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Mostrar botón de instalación si es necesario
-            const installButton = document.getElementById('installButton');
-            if (installButton) {
-                installButton.style.display = 'block';
-            }
-        });
-        
-        // Registrar Service Worker (temporalmente desactivado para debugging)
-        /*
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw.js')
+                navigator.serviceWorker.register('/sw.js')
                     .then((registration) => {
-                        console.log('Service Worker registrado:', registration);
+                        console.log('SW registered: ', registration);
                     })
-                    .catch((error) => {
-                        console.log('Error al registrar Service Worker:', error);
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
                     });
             });
         }
-        */
     </script>
-    
-    {% block scripts %}{% endblock %}
+    -->
 </body>
 </html>
