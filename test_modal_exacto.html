@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba del Modal de Venta - Exacto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .modal-personalizado {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 10000;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        .modal-body {
+            padding: 2rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .btn-whatsapp {
+            background: #25d366;
+            color: white;
+        }
+        .btn-whatsapp:hover {
+            background: #128c7e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba del Modal de Venta - Réplica Exacta</h1>
+        <p>Esta página replica exactamente el modal de venta de tu aplicación para identificar el problema.</p>
+        
+        <button class="btn btn-success" onclick="abrirModalVenta()">
+            📱 Abrir Modal de Venta
+        </button>
+        
+        <div class="info-section">
+            <h3>📊 Log de Actividad</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Venta -->
+    <div id="modalVenta" class="modal-personalizado" style="display: none;">
+        <div class="modal-overlay" onclick="cerrarModal()"></div>
+        <div class="modal-content">
+            <!-- Header del Modal -->
+            <div class="modal-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-dollar-sign me-2"></i>
+                    Detalles de la Venta
+                </h4>
+                <p class="mb-0 mt-2 opacity-75">Completa la información del comprador</p>
+            </div>
+            
+            <!-- Body del Modal -->
+            <div class="modal-body">
+                <form id="formVenta">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="mb-3">
+                                <label for="nombre_comprador" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    Nombre del Comprador *
+                                </label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       id="nombre_comprador" name="nombre_comprador" 
+                                       required placeholder="Ingresa el nombre completo"
+                                       autocomplete="off" oninput="updateVentaStatus()">
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-sm-6">
+                            <div class="mb-3">
+                                <label for="whatsapp_comprador" class="form-label fw-bold">
+                                    <i class="fab fa-whatsapp me-2 text-success"></i>
+                                    Número de WhatsApp *
+                                </label>
+                                <input type="tel" class="form-control form-control-lg" 
+                                       id="whatsapp_comprador" name="whatsapp_comprador" 
+                                       required placeholder="+34612345678"
+                                       autocomplete="off" oninput="updateVentaStatus()">
+                                <div class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Incluye el código del país
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="fecha_vencimiento" class="form-label fw-bold">
+                            <i class="fas fa-calendar-alt me-2 text-warning"></i>
+                            Fecha de Vencimiento *
+                        </label>
+                        <input type="date" class="form-control form-control-lg" 
+                               id="fecha_vencimiento" name="fecha_vencimiento" 
+                               required onchange="updateVentaStatus()">
+                        <div class="form-text text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            La cuenta debe vencer después de la fecha de compra
+                        </div>
+                    </div>
+                    
+                    <!-- Información de la cuenta -->
+                    <div class="alert alert-info border-0">
+                        <div class="row g-2">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-tv me-2"></i>Plataforma:</strong><br>
+                                <span class="badge bg-primary fs-6">HBO Max</span>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-envelope me-2"></i>Email:</strong><br>
+                                <code class="fs-6 text-break">soraias1564@gmail.com</code>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <strong><i class="fas fa-calendar me-2"></i>Fecha de Creación:</strong><br>
+                                <span class="badge bg-info fs-6">23/08/2025</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de estado de la venta -->
+                    <div id="estadoVenta" class="alert alert-warning border-0" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="mensajeEstado">Completa todos los campos para continuar</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Footer del Modal -->
+            <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid #dee2e6;">
+                <div class="d-grid gap-2 w-100">
+                    <div class="d-flex flex-column flex-sm-row gap-2 w-100">
+                        <button type="button" class="btn btn-secondary btn-lg flex-fill" onclick="cerrarModal()">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="button" class="btn btn-whatsapp btn-lg flex-fill" onclick="enviarWhatsApp()">
+                            <i class="fab fa-whatsapp me-2"></i>Enviar a WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-success btn-lg flex-fill" onclick="confirmarVenta()">
+                            <i class="fas fa-check me-2"></i>Confirmar Venta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para agregar logs
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #6c757d;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Función para abrir modal de venta
+        function abrirModalVenta() {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (!modal) {
+                    console.error('Modal no encontrado');
+                    return;
+                }
+                
+                // Establecer fecha mínima como hoy
+                const fechaInput = document.getElementById('fecha_vencimiento');
+                if (fechaInput) {
+                    const today = new Date().toISOString().split('T')[0];
+                    fechaInput.min = today;
+                }
+                
+                // Mostrar modal
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Mostrar estado inicial
+                try {
+                    updateVentaStatus();
+                } catch (error) {
+                    console.warn('Error al actualizar estado de venta:', error);
+                }
+                
+                // Enfoque en el primer campo
+                setTimeout(() => {
+                    try {
+                        const primerCampo = document.getElementById('nombre_comprador');
+                        if (primerCampo) {
+                            primerCampo.focus();
+                        }
+                    } catch (error) {
+                        console.warn('Error al enfocar campo:', error);
+                    }
+                }, 100);
+                
+                addLog('🚀 Modal de venta abierto');
+                
+            } catch (error) {
+                console.error('Error al abrir modal:', error);
+                addLog(`❌ Error al abrir modal: ${error.message}`);
+            }
+        }
+        
+        // Función para cerrar modal
+        function cerrarModal() {
+            try {
+                const modal = document.getElementById('modalVenta');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+                
+                document.body.style.overflow = '';
+                
+                // Limpiar formulario
+                const form = document.getElementById('formVenta');
+                if (form) {
+                    form.reset();
+                }
+                
+                // Ocultar mensaje de estado
+                const estadoDiv = document.getElementById('estadoVenta');
+                if (estadoDiv) {
+                    estadoDiv.style.display = 'none';
+                }
+                
+                addLog('🔒 Modal de venta cerrado');
+                
+            } catch (error) {
+                console.error('Error al cerrar modal:', error);
+                addLog(`❌ Error al cerrar modal: ${error.message}`);
+            }
+        }
+        
+        // Función para actualizar el estado de la venta (RÉPLICA EXACTA)
+        function updateVentaStatus() {
+            try {
+                console.log('🔍 updateVentaStatus() ejecutándose...');
+                addLog('🔍 updateVentaStatus() ejecutándose...');
+                
+                const nombreInput = document.getElementById('nombre_comprador');
+                const whatsappInput = document.getElementById('whatsapp_comprador');
+                const fechaInput = document.getElementById('fecha_vencimiento');
+                const estadoDiv = document.getElementById('estadoVenta');
+                const mensajeSpan = document.getElementById('mensajeEstado');
+                
+                console.log('📱 Elementos encontrados:', {
+                    nombreInput: nombreInput ? '✅' : '❌',
+                    whatsappInput: whatsappInput ? '✅' : '❌',
+                    fechaInput: fechaInput ? '✅' : '❌',
+                    estadoDiv: estadoDiv ? '✅' : '❌',
+                    mensajeSpan: mensajeSpan ? '✅' : '❌'
+                });
+                
+                addLog('📱 Elementos encontrados: ' + JSON.stringify({
+                    nombreInput: nombreInput ? '✅' : '❌',
+                    whatsappInput: whatsappInput ? '✅' : '❌',
+                    fechaInput: fechaInput ? '✅' : '❌',
+                    estadoDiv: estadoDiv ? '✅' : '❌',
+                    mensajeSpan: mensajeSpan ? '✅' : '❌'
+                }));
+                
+                if (!nombreInput || !whatsappInput || !fechaInput || !estadoDiv || !mensajeSpan) {
+                    console.warn('Elementos del formulario no encontrados:', {
+                        nombreInput: !!nombreInput,
+                        whatsappInput: !!whatsappInput,
+                        fechaInput: !!fechaInput,
+                        estadoDiv: !!estadoDiv,
+                        mensajeSpan: !!mensajeSpan
+                    });
+                    addLog('❌ Elementos del formulario no encontrados');
+                    return;
+                }
+                
+                const nombre = nombreInput.value.trim();
+                const whatsapp = whatsappInput.value.trim();
+                const fecha = fechaInput.value;
+                
+                // Log para depuración
+                console.log('🔍 Validando campos:', { nombre, whatsapp, fecha });
+                console.log('📊 Longitudes:', { 
+                    nombre: nombre.length, 
+                    whatsapp: whatsapp.length, 
+                    fecha: fecha.length 
+                });
+                
+                addLog(`🔍 Validando campos: nombre="${nombre}", whatsapp="${whatsapp}", fecha="${fecha}"`);
+                addLog(`📊 Longitudes: nombre=${nombre.length}, whatsapp=${whatsapp.length}, fecha=${fecha.length}`);
+                
+                if (!nombre || !whatsapp || !fecha) {
+                    // Faltan campos por completar
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-warning border-0';
+                    
+                    // Identificar qué campos faltan
+                    let camposFaltantes = [];
+                    if (!nombre) camposFaltantes.push('Nombre');
+                    if (!whatsapp) camposFaltantes.push('WhatsApp');
+                    if (!fecha) camposFaltantes.push('Fecha de Vencimiento');
+                    
+                    console.log('❌ Campos faltantes:', camposFaltantes);
+                    console.log('🔍 Detalle de validación:', {
+                        nombre: { valor: nombre, vacio: !nombre, longitud: nombre.length },
+                        whatsapp: { valor: whatsapp, vacio: !whatsapp, longitud: whatsapp.length },
+                        fecha: { valor: fecha, vacio: !fecha, longitud: fecha.length }
+                    });
+                    
+                    addLog(`❌ Campos faltantes: ${camposFaltantes.join(', ')}`);
+                    addLog(`🔍 Detalle de validación: ${JSON.stringify({
+                        nombre: { valor: nombre, vacio: !nombre, longitud: nombre.length },
+                        whatsapp: { valor: whatsapp, vacio: !whatsapp, longitud: whatsapp.length },
+                        fecha: { valor: fecha, vacio: !fecha, longitud: fecha.length }
+                    })}`);
+                    
+                    mensajeSpan.innerHTML = `<i class="fas fa-info-circle me-2"></i>Faltan campos: ${camposFaltantes.join(', ')}`;
+                } else {
+                    // Todos los campos están completos
+                    console.log('✅ Todos los campos están completos');
+                    addLog('✅ Todos los campos están completos');
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-success border-0';
+                    mensajeSpan.innerHTML = '<i class="fas fa-check-circle me-2"></i>¡Formulario completo! Puedes confirmar la venta';
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado de venta:', error);
+                addLog(`❌ Error: ${error.message}`);
+            }
+        }
+        
+        // Función para enviar WhatsApp
+        function enviarWhatsApp() {
+            addLog('📱 Función enviarWhatsApp() llamada');
+        }
+        
+        // Función para confirmar venta
+        function confirmarVenta() {
+            addLog('✅ Función confirmarVenta() llamada');
+        }
+        
+        // Inicialización
+        addLog('🚀 Página de prueba del modal de venta cargada');
+        addLog('📝 Haz clic en "Abrir Modal de Venta" para probar');
+        
+        // Configurar fecha mínima (hoy)
+        const fechaInput = document.getElementById('fecha_vencimiento');
+        if (fechaInput) {
+            const hoy = new Date().toISOString().split('T')[0];
+            fechaInput.min = hoy;
+            addLog(`📅 Fecha mínima configurada: ${hoy}`);
+        }
+    </script>
+</body>
+</html>

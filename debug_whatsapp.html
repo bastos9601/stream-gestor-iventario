@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug WhatsApp - Identificar Problema</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .field {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .field strong {
+            color: #495057;
+            display: inline-block;
+            width: 120px;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug WhatsApp - Identificar Problema</h1>
+        <p>Esta página nos ayudará a identificar exactamente qué está pasando con la función de WhatsApp.</p>
+        
+        <div class="info-section">
+            <h3>📱 Información del Comprador (Simulada)</h3>
+            <div class="bg-light p-3 rounded">
+                <div class="mb-2">
+                    <strong>Nombre:</strong> <span id="nombre-comprador">alfredo</span>
+                </div>
+                <div class="mb-2">
+                    <strong>WhatsApp:</strong> <span id="whatsapp-comprador">+51936185088</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Vencimiento:</strong> <span id="vencimiento-comprador">12/09/2025</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h3>🔧 Botones de Prueba</h3>
+            <button class="btn btn-success" onclick="debugWhatsApp()">
+                🔍 Debug WhatsApp
+            </button>
+            <button class="btn btn-warning" onclick="limpiarLog()">
+                🗑️ Limpiar Log
+            </button>
+        </div>
+        
+        <div class="info-section">
+            <h3>📊 Log de Depuración</h3>
+            <div id="log" class="log"></div>
+        </div>
+        
+        <div class="info-section">
+            <h3>📋 Estado de la Prueba</h3>
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Función para agregar logs
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #6c757d;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Función para mostrar estado
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Función de depuración de WhatsApp
+        function debugWhatsApp() {
+            addLog('🔍 Iniciando depuración de WhatsApp...');
+            
+            // PASO 1: Verificar elementos por ID
+            addLog('📱 PASO 1: Verificando elementos por ID...');
+            
+            const nombreElement = document.getElementById('nombre-comprador');
+            const whatsappElement = document.getElementById('whatsapp-comprador');
+            const vencimientoElement = document.getElementById('vencimiento-comprador');
+            
+            addLog(`📱 nombre-comprador: ${nombreElement ? '✅ Encontrado' : '❌ No encontrado'}`);
+            addLog(`📱 whatsapp-comprador: ${whatsappElement ? '✅ Encontrado' : '❌ No encontrado'}`);
+            addLog(`📱 vencimiento-comprador: ${vencimientoElement ? '✅ Encontrado' : '❌ No encontrado'}`);
+            
+            if (nombreElement) {
+                addLog(`📱 Contenido de nombre: "${nombreElement.textContent}"`);
+                addLog(`📱 Longitud de nombre: ${nombreElement.textContent.length}`);
+                addLog(`📱 Nombre vacío: ${!nombreElement.textContent.trim()}`);
+                addLog(`📱 Nombre es N/A: ${nombreElement.textContent.trim() === 'N/A'}`);
+            }
+            
+            if (whatsappElement) {
+                addLog(`📱 Contenido de WhatsApp: "${whatsappElement.textContent}"`);
+                addLog(`📱 Longitud de WhatsApp: ${whatsappElement.textContent.length}`);
+                addLog(`📱 WhatsApp vacío: ${!whatsappElement.textContent.trim()}`);
+                addLog(`📱 WhatsApp es N/A: ${whatsappElement.textContent.trim() === 'N/A'}`);
+            }
+            
+            if (vencimientoElement) {
+                addLog(`📱 Contenido de vencimiento: "${vencimientoElement.textContent}"`);
+                addLog(`📱 Longitud de vencimiento: ${vencimientoElement.textContent.length}`);
+                addLog(`📱 Vencimiento vacío: ${!vencimientoElement.textContent.trim()}`);
+                addLog(`📱 Vencimiento es N/A: ${vencimientoElement.textContent.trim() === 'N/A'}`);
+            }
+            
+            // PASO 2: Verificar si todos los elementos existen
+            addLog('📱 PASO 2: Verificando existencia de elementos...');
+            
+            if (!nombreElement || !whatsappElement || !vencimientoElement) {
+                addLog('❌ ERROR: No todos los elementos están presentes');
+                showStatus('❌ ERROR: No todos los elementos están presentes', 'error');
+                return;
+            }
+            
+            addLog('✅ Todos los elementos están presentes');
+            
+            // PASO 3: Extraer valores
+            addLog('📱 PASO 3: Extrayendo valores...');
+            
+            const nombre = nombreElement.textContent.trim();
+            const whatsapp = whatsappElement.textContent.trim();
+            const vencimiento = vencimientoElement.textContent.trim();
+            
+            addLog(`📱 Valores extraídos:`);
+            addLog(`   - Nombre: "${nombre}" (longitud: ${nombre.length})`);
+            addLog(`   - WhatsApp: "${whatsapp}" (longitud: ${whatsapp.length})`);
+            addLog(`   - Vencimiento: "${vencimiento}" (longitud: ${vencimiento.length})`);
+            
+            // PASO 4: Verificar valores
+            addLog('📱 PASO 4: Verificando valores...');
+            
+            const nombreValido = nombre && nombre !== 'N/A';
+            const whatsappValido = whatsapp && whatsapp !== 'N/A';
+            const vencimientoValido = vencimiento && vencimiento !== 'N/A';
+            
+            addLog(`📱 Validación de valores:`);
+            addLog(`   - Nombre válido: ${nombreValido}`);
+            addLog(`   - WhatsApp válido: ${whatsappValido}`);
+            addLog(`   - Vencimiento válido: ${vencimientoValido}`);
+            
+            // PASO 5: Verificar si todos son válidos
+            addLog('📱 PASO 5: Verificando si todos los valores son válidos...');
+            
+            if (nombreValido && whatsappValido && vencimientoValido) {
+                addLog('✅ Todos los valores son válidos');
+                showStatus('✅ Todos los valores son válidos - WhatsApp debería funcionar', 'success');
+                
+                // Simular envío exitoso
+                addLog('🎉 Simulando envío exitoso de WhatsApp...');
+                addLog(`📝 Mensaje para: ${nombre}`);
+                addLog(`📱 Número: ${whatsapp}`);
+                addLog(`📅 Vencimiento: ${vencimiento}`);
+                
+            } else {
+                addLog('❌ ERROR: No todos los valores son válidos');
+                
+                let camposFaltantes = [];
+                if (!nombreValido) camposFaltantes.push('Nombre');
+                if (!whatsappValido) camposFaltantes.push('WhatsApp');
+                if (!vencimientoValido) camposFaltantes.push('Vencimiento');
+                
+                addLog(`❌ Campos faltantes: ${camposFaltantes.join(', ')}`);
+                showStatus(`❌ ERROR: Campos faltantes: ${camposFaltantes.join(', ')}`, 'error');
+            }
+            
+            addLog('🔍 Depuración completada');
+        }
+        
+        // Función para limpiar el log
+        function limpiarLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('status').innerHTML = '';
+            addLog('🧹 Log limpiado');
+        }
+        
+        // Inicialización
+        addLog('🚀 Página de depuración de WhatsApp cargada');
+        addLog('📱 Haz clic en "Debug WhatsApp" para analizar el problema');
+        showStatus('✅ Página lista para depuración', 'success');
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba del Modal de Venta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid transparent;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba del Modal de Venta</h1>
+        <p>Esta página simula el modal de venta para verificar que la validación funciona correctamente.</p>
+        
+        <div class="info-section">
+            <h3>📝 Formulario de Venta</h3>
+            <form id="formVenta">
+                <div class="form-group">
+                    <label for="nombre_comprador" class="form-label">
+                        <i class="fas fa-user me-2"></i>
+                        Nombre del Comprador *
+                    </label>
+                    <input type="text" class="form-control" id="nombre_comprador" name="nombre_comprador" 
+                           placeholder="Ej: Carlos" oninput="updateVentaStatus()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="whatsapp_comprador" class="form-label">
+                        <i class="fab fa-whatsapp me-2"></i>
+                        Número de WhatsApp *
+                    </label>
+                    <input type="tel" class="form-control" id="whatsapp_comprador" name="whatsapp_comprador" 
+                           placeholder="+51936185088" oninput="updateVentaStatus()">
+                    <small class="text-muted">Incluye el código del país</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fecha_vencimiento" class="form-label">
+                        <i class="fas fa-calendar me-2"></i>
+                        Fecha de Vencimiento *
+                    </label>
+                    <input type="date" class="form-control" id="fecha_vencimiento" name="fecha_vencimiento" 
+                           onchange="updateVentaStatus()">
+                    <small class="text-muted">La cuenta debe vencer después de la fecha de compra</small>
+                </div>
+                
+                <!-- Mensaje de estado de la venta -->
+                <div id="estadoVenta" class="alert alert-warning" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span id="mensajeEstado">Completa todos los campos para continuar</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">
+                        🗑️ Limpiar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="validarFormulario()">
+                        ✅ Validar
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="info-section">
+            <h3>📊 Log de Validación</h3>
+            <div id="log" class="log"></div>
+        </div>
+        
+        <div class="info-section">
+            <h3>🔍 Información de Depuración</h3>
+            <div id="debug" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Función para agregar logs
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #6c757d;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Función para agregar información de depuración
+        function addDebug(message) {
+            const debug = document.getElementById('debug');
+            const timestamp = new Date().toLocaleTimeString();
+            const debugEntry = document.createElement('div');
+            debugEntry.innerHTML = `<span style="color: #007bff;">[${timestamp}]</span> ${message}`;
+            debug.appendChild(debugEntry);
+            debug.scrollTop = debug.scrollHeight;
+        }
+        
+        // Función para actualizar el estado de la venta (CORREGIDA)
+        function updateVentaStatus() {
+            try {
+                const nombreInput = document.getElementById('nombre_comprador');
+                const whatsappInput = document.getElementById('whatsapp_comprador');
+                const fechaInput = document.getElementById('fecha_vencimiento');
+                const estadoDiv = document.getElementById('estadoVenta');
+                const mensajeSpan = document.getElementById('mensajeEstado');
+                
+                if (!nombreInput || !whatsappInput || !fechaInput || !estadoDiv || !mensajeSpan) {
+                    console.warn('Elementos del formulario no encontrados:', {
+                        nombreInput: !!nombreInput,
+                        whatsappInput: !!whatsappInput,
+                        fechaInput: !!fechaInput,
+                        estadoDiv: !!estadoDiv,
+                        mensajeSpan: !!mensajeSpan
+                    });
+                    return;
+                }
+                
+                const nombre = nombreInput.value.trim();
+                const whatsapp = whatsappInput.value.trim();
+                const fecha = fechaInput.value;
+                
+                // Log para depuración
+                console.log('🔍 Validando campos:', { nombre, whatsapp, fecha });
+                addDebug(`Validando: nombre="${nombre}", whatsapp="${whatsapp}", fecha="${fecha}"`);
+                
+                if (!nombre || !whatsapp || !fecha) {
+                    // Faltan campos por completar
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-warning';
+                    
+                    // Identificar qué campos faltan
+                    let camposFaltantes = [];
+                    if (!nombre) camposFaltantes.push('Nombre');
+                    if (!whatsapp) camposFaltantes.push('WhatsApp');
+                    if (!fecha) camposFaltantes.push('Fecha de Vencimiento');
+                    
+                    console.log('❌ Campos faltantes:', camposFaltantes);
+                    addLog(`❌ Campos faltantes: ${camposFaltantes.join(', ')}`);
+                    mensajeSpan.innerHTML = `<i class="fas fa-info-circle me-2"></i>Faltan campos: ${camposFaltantes.join(', ')}`;
+                } else {
+                    // Todos los campos están completos
+                    console.log('✅ Todos los campos están completos');
+                    addLog('✅ Todos los campos están completos');
+                    estadoDiv.style.display = 'block';
+                    estadoDiv.className = 'alert alert-success';
+                    mensajeSpan.innerHTML = '<i class="fas fa-check-circle me-2"></i>¡Formulario completo! Puedes confirmar la venta';
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado de venta:', error);
+                addLog(`❌ Error: ${error.message}`);
+            }
+        }
+        
+        // Función para validar el formulario manualmente
+        function validarFormulario() {
+            addLog('🔍 Validación manual iniciada...');
+            updateVentaStatus();
+        }
+        
+        // Función para limpiar el formulario
+        function limpiarFormulario() {
+            document.getElementById('nombre_comprador').value = '';
+            document.getElementById('whatsapp_comprador').value = '';
+            document.getElementById('fecha_vencimiento').value = '';
+            document.getElementById('estadoVenta').style.display = 'none';
+            addLog('🧹 Formulario limpiado');
+            addDebug('Formulario limpiado, campos vacíos');
+        }
+        
+        // Inicialización
+        addLog('🚀 Página de prueba del modal de venta cargada');
+        addLog('📝 Escribe en los campos para ver la validación en tiempo real');
+        addDebug('Sistema listo para pruebas de validación');
+        
+        // Configurar fecha mínima (hoy)
+        const fechaInput = document.getElementById('fecha_vencimiento');
+        const hoy = new Date().toISOString().split('T')[0];
+        fechaInput.min = hoy;
+        addDebug(`Fecha mínima configurada: ${hoy}`);
+    </script>
+</body>
+</html>
