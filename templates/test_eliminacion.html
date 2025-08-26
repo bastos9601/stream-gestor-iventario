@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Eliminación de Usuarios</title>
+</head>
+<body>
+    <h1>Prueba de Eliminación de Usuarios</h1>
+    
+    <h2>Formulario de Prueba</h2>
+    <form method="POST" action="/usuarios/2/eliminar">
+        <button type="submit">Eliminar Usuario ID 2</button>
+    </form>
+    
+    <h2>JavaScript de Prueba</h2>
+    <button onclick="confirmarEliminacion(2, 'usuario_prueba')">Eliminar con JavaScript</button>
+    
+    <script>
+    function confirmarEliminacion(usuarioId, nombreUsuario) {
+        console.log('Función confirmarEliminacion llamada');
+        console.log('Usuario ID:', usuarioId);
+        console.log('Nombre:', nombreUsuario);
+        
+        if (confirm('¿Estás seguro de que quieres eliminar al usuario ' + nombreUsuario + '?')) {
+            console.log('Confirmación aceptada, creando formulario...');
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/usuarios/' + usuarioId + '/eliminar';
+            
+            console.log('Formulario creado:', form);
+            console.log('Action:', form.action);
+            console.log('Method:', form.method);
+            
+            document.body.appendChild(form);
+            console.log('Formulario agregado al DOM');
+            
+            form.submit();
+            console.log('Formulario enviado');
+        } else {
+            console.log('Confirmación cancelada');
+        }
+    }
+    </script>
+</body>
+</html>

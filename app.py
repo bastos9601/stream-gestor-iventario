@@ -706,27 +706,45 @@ def editar_usuario(id):
 @login_required
 def eliminar_usuario(id):
     """Eliminar usuario (solo para administradores)"""
+    print(f"DEBUG: Intento de eliminar usuario ID: {id}")
+    print(f"DEBUG: Usuario actual: {current_user.username}, es_admin: {current_user.es_admin}")
+    
     if not current_user.es_admin:
+        print("DEBUG: Usuario no es administrador")
         flash('No tienes permisos para realizar esta acción', 'error')
         return redirect(url_for('index'))
     
     usuario = Usuario.query.get_or_404(id)
+    print(f"DEBUG: Usuario encontrado: {usuario.username}")
     
     # No permitir eliminar el propio usuario
     if usuario.id == current_user.id:
+        print("DEBUG: Intento de eliminar propio usuario")
         flash('No puedes eliminar tu propio usuario', 'error')
         return redirect(url_for('usuarios'))
     
     # Verificar si el usuario tiene cuentas
     if usuario.cuentas:
+        print(f"DEBUG: Usuario tiene {len(usuario.cuentas)} cuentas asociadas")
         flash('No se puede eliminar un usuario que tiene cuentas asociadas', 'error')
         return redirect(url_for('usuarios'))
     
-    db.session.delete(usuario)
-    db.session.commit()
+    try:
+        db.session.delete(usuario)
+        db.session.commit()
+        print(f"DEBUG: Usuario {usuario.username} eliminado exitosamente")
+        flash('Usuario eliminado correctamente', 'success')
+    except Exception as e:
+        print(f"DEBUG: Error al eliminar usuario: {str(e)}")
+        db.session.rollback()
+        flash('Error al eliminar el usuario', 'error')
     
-    flash('Usuario eliminado correctamente', 'success')
     return redirect(url_for('usuarios'))
+
+@app.route('/test_eliminacion')
+def test_eliminacion():
+    """Página de prueba para verificar eliminación de usuarios"""
+    return render_template('test_eliminacion.html')
 
 @app.route('/apk')
 @login_required

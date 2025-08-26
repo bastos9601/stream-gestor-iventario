@@ -1983,17 +1983,43 @@ ${mensajeVencimiento}
 
         // Función para copiar mensaje de WhatsApp (cuando la cuenta ya está vendida)
         function copiarMensajeWhatsApp() {
-            const mensaje = `¡Hola! 🎉
+            // Usar IDs específicos para mayor confiabilidad
+            const nombreElement = document.getElementById('nombre-comprador');
+            const whatsappElement = document.getElementById('whatsapp-comprador');
+            const vencimientoElement = document.getElementById('vencimiento-comprador');
+            
+            if (!nombreElement || !whatsappElement || !vencimientoElement) {
+                console.error('Elementos del comprador no encontrados:', {
+                    nombre: !!nombreElement,
+                    whatsapp: !!whatsappElement,
+                    vencimiento: !!vencimientoElement
+                });
+                alert('Error: No se pudo obtener la información del comprador');
+                return;
+            }
+            
+            const nombre = nombreElement.textContent.trim();
+            const whatsapp = whatsappElement.textContent.trim();
+            const vencimiento = vencimientoElement.textContent.trim();
+            
+            console.log('Información del comprador extraída:', { nombre, whatsapp, vencimiento });
+            
+            // Verificar que no sea N/A o esté vacío
+            if (!nombre || nombre === 'N/A' || !whatsapp || whatsapp === 'N/A' || !vencimiento || vencimiento === 'N/A') {
+                alert('La información del comprador no está completa. Por favor, verifica que todos los campos estén llenos.');
+                return;
+            }
+            
+            const mensaje = `¡Hola ${nombre}! 🎉
 
 📱 *Datos de tu cuenta {{ cuenta.plataforma }}:*
 
 🏷️ *Plataforma:* {{ cuenta.plataforma }}
 📧 *Email:* {{ cuenta.email }}
 🔑 *Contraseña:* {{ cuenta.password }}
-📅 *Fecha de Creación:* {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
-📅 *Vencimiento:* {{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') if cuenta.fecha_vencimiento else 'N/A' }}
+📅 *Vencimiento:* ${vencimiento}
 
-✅ *Tu cuenta está lista para usar*
+✅ *Tu cuenta sigue activa*
 
 📱 *ID de la cuenta:* #{{ cuenta.id }}
 
@@ -2037,30 +2063,30 @@ Si tienes alguna pregunta, no dudes en contactarnos.`;
 
         // Función para enviar WhatsApp al comprador (cuando la cuenta ya está vendida)
         function enviarWhatsAppComprador() {
-            // Verificar si hay información del comprador disponible
-            const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
-            if (!compradorInfo) {
-                alert('No hay información del comprador disponible');
-                return;
-            }
-            
-            // Extraer información del comprador del DOM
-            const nombreElement = compradorInfo.querySelector('div:nth-child(1)');
-            const whatsappElement = compradorInfo.querySelector('div:nth-child(2)');
-            const vencimientoElement = compradorInfo.querySelector('div:nth-child(3)');
+            // Usar IDs específicos para mayor confiabilidad
+            const nombreElement = document.getElementById('nombre-comprador');
+            const whatsappElement = document.getElementById('whatsapp-comprador');
+            const vencimientoElement = document.getElementById('vencimiento-comprador');
             
             if (!nombreElement || !whatsappElement || !vencimientoElement) {
-                alert('Información del comprador incompleta');
+                console.error('Elementos del comprador no encontrados:', {
+                    nombre: !!nombreElement,
+                    whatsapp: !!whatsappElement,
+                    vencimiento: !!vencimientoElement
+                });
+                alert('Error: No se pudo obtener la información del comprador');
                 return;
             }
             
-            const nombre = nombreElement.textContent.replace('Nombre:', '').trim();
-            const whatsapp = whatsappElement.textContent.replace('WhatsApp:', '').trim();
-            const vencimiento = vencimientoElement.textContent.replace('Vencimiento:', '').trim();
+            const nombre = nombreElement.textContent.trim();
+            const whatsapp = whatsappElement.textContent.trim();
+            const vencimiento = vencimientoElement.textContent.trim();
             
-            // Verificar que no sea N/A
-            if (nombre === 'N/A' || whatsapp === 'N/A' || vencimiento === 'N/A') {
-                alert('La información del comprador no está completa');
+            console.log('Información del comprador extraída:', { nombre, whatsapp, vencimiento });
+            
+            // Verificar que no sea N/A o esté vacío
+            if (!nombre || nombre === 'N/A' || !whatsapp || whatsapp === 'N/A' || !vencimiento || vencimiento === 'N/A') {
+                alert('La información del comprador no está completa. Por favor, verifica que todos los campos estén llenos.');
                 return;
             }
             
@@ -2094,30 +2120,30 @@ Si tienes alguna pregunta, no dudes en contactarnos.`;
 
         // Función para recordar vencimiento (cuando la cuenta ya está vendida)
         function recordarVencimiento() {
-            // Verificar si hay información del comprador disponible
-            const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
-            if (!compradorInfo) {
-                alert('No hay información del comprador disponible');
-                return;
-            }
-            
-            // Extraer información del comprador del DOM
-            const nombreElement = compradorInfo.querySelector('div:nth-child(1)');
-            const whatsappElement = compradorInfo.querySelector('div:nth-child(2)');
-            const vencimientoElement = compradorInfo.querySelector('div:nth-child(3)');
+            // Usar IDs específicos para mayor confiabilidad
+            const nombreElement = document.getElementById('nombre-comprador');
+            const whatsappElement = document.getElementById('whatsapp-comprador');
+            const vencimientoElement = document.getElementById('vencimiento-comprador');
             
             if (!nombreElement || !whatsappElement || !vencimientoElement) {
-                alert('Información del comprador incompleta');
+                console.error('Elementos del comprador no encontrados:', {
+                    nombre: !!nombreElement,
+                    whatsapp: !!whatsappElement,
+                    vencimiento: !!vencimientoElement
+                });
+                alert('Error: No se pudo obtener la información del comprador');
                 return;
             }
             
-            const nombre = nombreElement.textContent.replace('Nombre:', '').trim();
-            const whatsapp = whatsappElement.textContent.replace('WhatsApp:', '').trim();
-            const vencimiento = vencimientoElement.textContent.replace('Vencimiento:', '').trim();
+            const nombre = nombreElement.textContent.trim();
+            const whatsapp = whatsappElement.textContent.trim();
+            const vencimiento = vencimientoElement.textContent.trim();
             
-            // Verificar que no sea N/A
-            if (nombre === 'N/A' || whatsapp === 'N/A' || vencimiento === 'N/A') {
-                alert('La información del comprador no está completa');
+            console.log('Información del comprador extraída:', { nombre, whatsapp, vencimiento });
+            
+            // Verificar que no sea N/A o esté vacío
+            if (!nombre || nombre === 'N/A' || !whatsapp || whatsapp === 'N/A' || !vencimiento || vencimiento === 'N/A') {
+                alert('La información del comprador no está completa. Por favor, verifica que todos los campos estén llenos.');
                 return;
             }
             
@@ -2227,5 +2253,51 @@ ${mensajeVencimiento}
             // Mostrar confirmación
             alert(`⏰ Recordatorio de vencimiento enviado a ${nombre}\nNúmero: ${whatsapp}`);
         }
-</script>
-{% endblock %}
+        
+        // Función de depuración para verificar elementos del DOM
+        function debugCompradorInfo() {
+            console.log('=== DEBUG: Información del Comprador ===');
+            
+            const nombreElement = document.getElementById('nombre-comprador');
+            const whatsappElement = document.getElementById('whatsapp-comprador');
+            const vencimientoElement = document.getElementById('vencimiento-comprador');
+            
+            console.log('Elementos encontrados:', {
+                nombre: nombreElement,
+                whatsapp: whatsappElement,
+                vencimiento: vencimientoElement
+            });
+            
+            if (nombreElement) {
+                console.log('Nombre:', nombreElement.textContent);
+                console.log('Nombre (innerHTML):', nombreElement.innerHTML);
+            }
+            
+            if (whatsappElement) {
+                console.log('WhatsApp:', whatsappElement.textContent);
+                console.log('WhatsApp (innerHTML):', whatsappElement.innerHTML);
+            }
+            
+            if (vencimientoElement) {
+                console.log('Vencimiento:', vencimientoElement.textContent);
+                console.log('Vencimiento (innerHTML):', vencimientoElement.innerHTML);
+            }
+            
+            // Verificar si hay elementos con la clase bg-light p-3 rounded
+            const compradorInfo = document.querySelector('.bg-light.p-3.rounded');
+            console.log('Elemento con clase bg-light p-3 rounded:', compradorInfo);
+            
+            if (compradorInfo) {
+                console.log('Contenido del elemento:', compradorInfo.innerHTML);
+            }
+            
+            console.log('=== FIN DEBUG ===');
+        }
+        
+        // Ejecutar depuración al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página cargada, ejecutando depuración...');
+            setTimeout(debugCompradorInfo, 1000); // Esperar 1 segundo para que todo se cargue
+        });
+    </script>
+    {% endblock %}
