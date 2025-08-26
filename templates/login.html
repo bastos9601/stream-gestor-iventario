@@ -508,7 +508,8 @@
                 <label for="username" class="form-label">
                     <i class="fas fa-user me-2"></i>Usuario
                 </label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control" id="username" name="username" required 
+                       value="{{ nombre_usuario if nombre_usuario else '' }}">
             </div>
             
             <div class="mb-3">
@@ -524,6 +525,22 @@
                 </button>
             </div>
         </form>
+
+        <!-- Mensaje especial para usuarios inactivos -->
+        {% if usuario_inactivo %}
+        <div class="alert alert-danger mt-3" role="alert">
+            <div class="text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2 text-danger"></i>
+                <h5 class="alert-heading">Usuario Vencido</h5>
+                <p class="mb-3">Tu cuenta ha sido desactivada. Contacta a tu administrador para reactivarla.</p>
+                <a href="https://wa.me/51921146588?text=Hola, mi usuario {{ nombre_usuario }} está vencido y necesito que me lo reactiven. Gracias." 
+                   class="btn btn-success btn-lg" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i>
+                    Contactar por WhatsApp
+                </a>
+            </div>
+        </div>
+        {% endif %}
 
         <div class="text-center mt-3">
             <small class="text-muted">

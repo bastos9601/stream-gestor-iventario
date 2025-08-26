@@ -5,7 +5,7 @@ Gestor de Cuentas de Streaming - Aplicación Web
 Sistema web para gestionar inventario de cuentas de streaming desde cualquier dispositivo
 """
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -112,14 +112,24 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        usuario = Usuario.query.filter_by(username=username, activo=True).first()
+        # Primero buscar el usuario sin filtrar por activo
+        usuario = Usuario.query.filter_by(username=username).first()
         
-        if usuario and usuario.check_password(password):
-            login_user(usuario)
-            flash(f'¡Bienvenido, {usuario.username}!', 'success')
-            return redirect(url_for('index'))
+        if usuario:
+            # Verificar si el usuario está inactivo
+            if not usuario.activo:
+                flash('Usuario vencido. Contacta a tu administrador por WhatsApp.', 'error')
+                return render_template('login.html', usuario_inactivo=True, nombre_usuario=username)
+            
+            # Verificar contraseña
+            if usuario.check_password(password):
+                login_user(usuario)
+                flash(f'¡Bienvenido, {usuario.username}!', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('Contraseña incorrecta', 'error')
         else:
-            flash('Usuario o contraseña incorrectos', 'error')
+            flash('Usuario no encontrado', 'error')
     
     return render_template('login.html')
 
@@ -190,6 +200,12 @@ def index():
         # Calcular total de cuentas por vencer
         total_cuentas_por_vencer = len(cuentas_proximas_vencer)
         
+        # Calcular cuentas activas (con fecha de vencimiento futura)
+        cuentas_activas = Cuenta.query.filter(
+            Cuenta.fecha_vencimiento.isnot(None),
+            Cuenta.fecha_vencimiento > today
+        ).count()
+        
         # Estadísticas por usuario
         usuarios_stats = db.session.query(
             Usuario.username,
@@ -231,6 +247,13 @@ def index():
         # Calcular total de cuentas por vencer
         total_cuentas_por_vencer = len(cuentas_proximas_vencer)
         
+        # Calcular cuentas activas del usuario (con fecha de vencimiento futura)
+        cuentas_activas_usuario = Cuenta.query.filter(
+            Cuenta.usuario_id == current_user.id,
+            Cuenta.fecha_vencimiento.isnot(None),
+            Cuenta.fecha_vencimiento > today
+        ).count()
+        
         usuarios_stats = None
         ultimas_cuentas = Cuenta.query.filter_by(usuario_id=current_user.id).order_by(Cuenta.fecha_creacion.desc()).limit(5).all()
     
@@ -250,6 +273,7 @@ def index():
                          total_cuentas=total_cuentas,
                          cuentas_disponibles=cuentas_disponibles,
                          cuentas_vendidas=cuentas_vendidas,
+                         cuentas_activas=cuentas_activas if current_user.es_admin else cuentas_activas_usuario,
                          plataformas=plataformas,
                          ultimas_cuentas=ultimas_cuentas,
                          usuarios_stats=usuarios_stats,
@@ -275,22 +299,59 @@ def cuentas():
         if plataforma:
             query = query.filter_by(plataforma=plataforma)
         if estado:
-            query = query.filter_by(estado=estado)
+            if estado == 'Por Vencer':
+                # Cuentas que vencen en los próximos 7 días
+                query = query.filter(
+                    Cuenta.fecha_vencimiento.isnot(None),
+                    Cuenta.fecha_vencimiento >= today,
+                    Cuenta.fecha_vencimiento <= today + timedelta(days=7)
+                )
+            elif estado == 'Vencida':
+                # Cuentas que ya vencieron
+                query = query.filter(
+                    Cuenta.fecha_vencimiento.isnot(None),
+                    Cuenta.fecha_vencimiento < today
+                )
+            else:
+                # Estados normales (Disponible, Vendida)
+                query = query.filter_by(estado=estado)
     else:
         # Usuario normal solo ve sus propias cuentas
         query = Cuenta.query.filter_by(usuario_id=current_user.id)
         if plataforma:
             query = query.filter_by(plataforma=plataforma)
         if estado:
-            query = query.filter_by(estado=estado)
+            if estado == 'Por Vencer':
+                # Cuentas que vencen en los próximos 7 días
+                query = query.filter(
+                    Cuenta.fecha_vencimiento.isnot(None),
+                    Cuenta.fecha_vencimiento >= today,
+                    Cuenta.fecha_vencimiento <= today + timedelta(days=7)
+                )
+            elif estado == 'Vencida':
+                # Cuentas que ya vencieron
+                query = query.filter(
+                    Cuenta.fecha_vencimiento.isnot(None),
+                    Cuenta.fecha_vencimiento < today
+                )
+            else:
+                # Estados normales (Disponible, Vendida)
+                query = query.filter_by(estado=estado)
     
     cuentas = query.order_by(Cuenta.fecha_creacion.desc()).all()
     plataformas_disponibles = db.session.query(Cuenta.plataforma).distinct().all()
     
-    # Calcular estadísticas
+    # Calcular estadísticas completas
     total_cuentas = len(cuentas)
     cuentas_disponibles = len([c for c in cuentas if c.estado == 'Disponible'])
     cuentas_vendidas = len([c for c in cuentas if c.estado == 'Vendida'])
+    
+    # Calcular cuentas por vencer y vencidas
+    cuentas_por_vencer = len([c for c in cuentas if c.fecha_vencimiento and 
+                              c.fecha_vencimiento >= today and 
+                              c.fecha_vencimiento <= today + timedelta(days=7)])
+    cuentas_vencidas = len([c for c in cuentas if c.fecha_vencimiento and 
+                           c.fecha_vencimiento < today])
     
     # Calcular valor total de las ventas
     valor_total_ventas = sum(c.precio for c in cuentas if c.estado == 'Vendida')
@@ -303,6 +364,8 @@ def cuentas():
                          total_cuentas=total_cuentas,
                          cuentas_disponibles=cuentas_disponibles,
                          cuentas_vendidas=cuentas_vendidas,
+                         cuentas_por_vencer=cuentas_por_vencer,
+                         cuentas_vencidas=cuentas_vencidas,
                          valor_total_ventas=valor_total_ventas,
                          today=today)
 
@@ -457,6 +520,41 @@ def generar_mensaje_whatsapp(cuenta):
 ¡Disfruta de tu cuenta! 🎬"""
     
     return mensaje
+
+@app.route('/cuentas/<int:id>/renovar', methods=['POST'])
+@login_required
+def renovar_cuenta(id):
+    """Renovar cuenta extendiendo la fecha de vencimiento por un mes"""
+    cuenta = Cuenta.query.get_or_404(id)
+    
+    # Verificar que el usuario pueda renovar esta cuenta
+    if not current_user.es_admin and cuenta.usuario_id != current_user.id:
+        flash('No tienes permisos para renovar esta cuenta', 'error')
+        return redirect(url_for('cuentas'))
+    
+    # Verificar que la cuenta tenga fecha de vencimiento
+    if not cuenta.fecha_vencimiento:
+        flash('Esta cuenta no tiene fecha de vencimiento configurada', 'warning')
+        return redirect(url_for('cuentas'))
+    
+    try:
+        # Calcular nueva fecha de vencimiento (un mes más)
+        from dateutil.relativedelta import relativedelta
+        
+        nueva_fecha_vencimiento = cuenta.fecha_vencimiento + relativedelta(months=1)
+        
+        # Actualizar la cuenta
+        cuenta.fecha_vencimiento = nueva_fecha_vencimiento
+        
+        db.session.commit()
+        
+        flash(f'Cuenta renovada exitosamente. Nueva fecha de vencimiento: {nueva_fecha_vencimiento.strftime("%d/%m/%Y")}', 'success')
+        return redirect(url_for('cuentas'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al renovar la cuenta: {str(e)}', 'error')
+        return redirect(url_for('cuentas'))
 
 @app.route('/cuentas/<int:id>/eliminar', methods=['POST'])
 @login_required
@@ -679,6 +777,278 @@ def pagina_no_encontrada(error):
 @app.errorhandler(500)
 def error_interno(error):
     return render_template('500.html'), 500
+
+@app.route('/exportar_cuentas_vendidas')
+@login_required
+def exportar_cuentas_vendidas():
+    """Exportar cuentas vendidas a archivo de texto"""
+    from flask import send_file
+    import io
+    from datetime import datetime
+    
+    # Obtener cuentas vendidas
+    if current_user.es_admin:
+        # Administrador ve todas las cuentas vendidas
+        cuentas_vendidas = Cuenta.query.filter_by(estado='Vendida').order_by(Cuenta.fecha_venta.desc()).all()
+    else:
+        # Usuario normal solo ve sus propias cuentas vendidas
+        cuentas_vendidas = Cuenta.query.filter_by(estado='Vendida', usuario_id=current_user.id).order_by(Cuenta.fecha_venta.desc()).all()
+    
+    if not cuentas_vendidas:
+        flash('No hay cuentas vendidas para exportar', 'warning')
+        return redirect(url_for('cuentas'))
+    
+    # Crear archivo de texto en memoria
+    output = io.StringIO()
+    
+    # Escribir encabezado del archivo
+    output.write("=" * 80 + "\n")
+    output.write("REPORTE DE CUENTAS VENDIDAS\n")
+    output.write("=" * 80 + "\n")
+    output.write(f"Fecha de exportación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")
+    output.write(f"Total de cuentas vendidas: {len(cuentas_vendidas)}\n")
+    output.write("=" * 80 + "\n\n")
+    
+    # Escribir datos de cada cuenta
+    for i, cuenta in enumerate(cuentas_vendidas, 1):
+        output.write(f"CUENTA #{i}\n")
+        output.write("-" * 40 + "\n")
+        output.write(f"ID: {cuenta.id}\n")
+        output.write(f"Plataforma: {cuenta.plataforma}\n")
+        output.write(f"Email: {cuenta.email}\n")
+        output.write(f"Contraseña: {cuenta.password}\n")
+        output.write(f"Precio: ${cuenta.precio:.2f}\n")
+        output.write(f"Fecha de Compra: {cuenta.fecha_compra.strftime('%d/%m/%Y') if cuenta.fecha_compra else 'N/A'}\n")
+        output.write(f"Fecha de Venta: {cuenta.fecha_venta.strftime('%d/%m/%Y %H:%M') if cuenta.fecha_venta else 'N/A'}\n")
+        output.write(f"Nombre del Comprador: {cuenta.nombre_comprador or 'N/A'}\n")
+        output.write(f"WhatsApp del Comprador: {cuenta.whatsapp_comprador or 'N/A'}\n")
+        output.write(f"Fecha de Vencimiento: {cuenta.fecha_vencimiento.strftime('%d/%m/%Y') if cuenta.fecha_vencimiento else 'N/A'}\n")
+        if cuenta.notas:
+            output.write(f"Notas: {cuenta.notas}\n")
+        output.write("\n" + "=" * 80 + "\n\n")
+    
+    # Escribir resumen final
+    output.write("RESUMEN FINAL\n")
+    output.write("-" * 40 + "\n")
+    output.write(f"Total de cuentas exportadas: {len(cuentas_vendidas)}\n")
+    output.write(f"Valor total de ventas: ${sum(c.precio for c in cuentas_vendidas):.2f}\n")
+    output.write(f"Fecha de exportación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")
+    output.write("=" * 80 + "\n")
+    
+    # Preparar respuesta
+    output.seek(0)
+    
+    # Generar nombre de archivo con fecha
+    fecha_actual = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'cuentas_vendidas_{fecha_actual}.txt'
+    
+    # Crear respuesta con archivo de texto
+    response = send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/plain',
+        as_attachment=True,
+        download_name=filename
+    )
+    
+    # Agregar headers para evitar problemas de caché
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
+    return response
+
+@app.route('/exportar_cuentas_disponibles')
+@login_required
+def exportar_cuentas_disponibles():
+    """Exportar cuentas disponibles a archivo de texto"""
+    from flask import send_file
+    import io
+    from datetime import datetime
+    
+    # Obtener cuentas disponibles
+    if current_user.es_admin:
+        # Administrador ve todas las cuentas disponibles
+        cuentas_disponibles = Cuenta.query.filter_by(estado='Disponible').order_by(Cuenta.fecha_creacion.desc()).all()
+    else:
+        # Usuario normal solo ve sus propias cuentas disponibles
+        cuentas_disponibles = Cuenta.query.filter_by(estado='Disponible', usuario_id=current_user.id).order_by(Cuenta.fecha_creacion.desc()).all()
+    
+    if not cuentas_disponibles:
+        flash('No hay cuentas disponibles para exportar', 'warning')
+        return redirect(url_for('cuentas'))
+    
+    # Crear archivo de texto en memoria
+    output = io.StringIO()
+    
+    # Escribir encabezado del archivo
+    output.write("=" * 80 + "\n")
+    output.write("REPORTE DE CUENTAS DISPONIBLES\n")
+    output.write("=" * 80 + "\n")
+    output.write(f"Fecha de exportación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")
+    output.write(f"Total de cuentas disponibles: {len(cuentas_disponibles)}\n")
+    output.write("=" * 80 + "\n\n")
+    
+    # Escribir datos de cada cuenta
+    for i, cuenta in enumerate(cuentas_disponibles, 1):
+        output.write(f"CUENTA #{i}\n")
+        output.write("-" * 40 + "\n")
+        output.write(f"ID: {cuenta.id}\n")
+        output.write(f"Plataforma: {cuenta.plataforma}\n")
+        output.write(f"Email: {cuenta.email}\n")
+        output.write(f"Contraseña: {cuenta.password}\n")
+        output.write(f"Precio: ${cuenta.precio:.2f}\n")
+        output.write(f"Fecha de Compra: {cuenta.fecha_compra.strftime('%d/%m/%Y') if cuenta.fecha_compra else 'N/A'}\n")
+        output.write(f"Fecha de Creación: {cuenta.fecha_creacion.strftime('%d/%m/%Y %H:%M:%S') if cuenta.fecha_creacion else 'N/A'}\n")
+        if cuenta.fecha_vencimiento:
+            output.write(f"Fecha de Vencimiento: {cuenta.fecha_vencimiento.strftime('%d/%m/%Y')}\n")
+            # Calcular días restantes
+            dias_restantes = (cuenta.fecha_vencimiento - datetime.now().date()).days
+            if dias_restantes > 0:
+                output.write(f"Días Restantes: {dias_restantes} día{'s' if dias_restantes != 1 else ''}\n")
+            elif dias_restantes == 0:
+                output.write("Días Restantes: VENCE HOY ⚠️\n")
+            else:
+                output.write(f"Días Restantes: VENCIDA hace {abs(dias_restantes)} día{'s' if abs(dias_restantes) != 1 else ''} ❌\n")
+        if cuenta.notas:
+            output.write(f"Notas: {cuenta.notas}\n")
+        output.write("\n" + "=" * 80 + "\n\n")
+    
+    # Escribir resumen final
+    output.write("RESUMEN FINAL\n")
+    output.write("-" * 40 + "\n")
+    output.write(f"Total de cuentas exportadas: {len(cuentas_disponibles)}\n")
+    output.write(f"Valor total del inventario: ${sum(c.precio for c in cuentas_disponibles):.2f}\n")
+    output.write(f"Fecha de exportación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")
+    output.write("=" * 80 + "\n")
+    
+    # Preparar respuesta
+    output.seek(0)
+    
+    # Generar nombre de archivo con fecha
+    fecha_actual = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'cuentas_disponibles_{fecha_actual}.txt'
+    
+    # Crear respuesta con archivo de texto
+    response = send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/plain',
+        as_attachment=True,
+        download_name=filename
+    )
+    
+    # Agregar headers para evitar problemas de caché
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
+    return response
+
+@app.route('/exportar_usuarios')
+@login_required
+def exportar_usuarios():
+    """Exportar usuarios a archivo de texto (solo para administradores)"""
+    from flask import send_file
+    import io
+    from datetime import datetime
+    
+    # Verificar que solo los administradores puedan exportar usuarios
+    if not current_user.es_admin:
+        flash('No tienes permisos para acceder a esta función', 'error')
+        return redirect(url_for('index'))
+    
+    # Obtener todos los usuarios
+    usuarios = Usuario.query.order_by(Usuario.fecha_creacion.desc()).all()
+    
+    if not usuarios:
+        flash('No hay usuarios para exportar', 'warning')
+        return redirect(url_for('usuarios'))
+    
+    # Crear archivo de texto en memoria
+    output = io.StringIO()
+    
+    # Escribir encabezado del archivo
+    output.write("=" * 80 + "\n")
+    output.write("REPORTE DE USUARIOS DEL SISTEMA\n")
+    output.write("=" * 80 + "\n")
+    output.write(f"Fecha de exportación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")
+    output.write(f"Total de usuarios: {len(usuarios)}\n")
+    output.write(f"Exportado por: {current_user.username} (Administrador)\n")
+    output.write("=" * 80 + "\n\n")
+    
+    # Escribir datos de cada usuario
+    for i, usuario in enumerate(usuarios, 1):
+        output.write(f"USUARIO #{i}\n")
+        output.write("-" * 40 + "\n")
+        output.write(f"ID: {usuario.id}\n")
+        output.write(f"Nombre de Usuario: {usuario.username}\n")
+        output.write(f"Email: {usuario.email}\n")
+        output.write(f"Tipo de Usuario: {'Administrador' if usuario.es_admin else 'Usuario Normal'}\n")
+        output.write(f"Estado: {'Activo' if usuario.activo else 'Inactivo'}\n")
+        output.write(f"Fecha de Creación: {usuario.fecha_creacion.strftime('%d/%m/%Y %H:%M:%S')}\n")
+        
+        # Contar cuentas del usuario
+        total_cuentas = len(usuario.cuentas)
+        cuentas_disponibles = len([c for c in usuario.cuentas if c.estado == 'Disponible'])
+        cuentas_vendidas = len([c for c in usuario.cuentas if c.estado == 'Vendida'])
+        
+        output.write(f"Total de Cuentas: {total_cuentas}\n")
+        output.write(f"  - Disponibles: {cuentas_disponibles}\n")
+        output.write(f"  - Vendidas: {cuentas_vendidas}\n")
+        
+        # Calcular valor del inventario del usuario
+        valor_inventario = sum(c.precio for c in usuario.cuentas if c.estado == 'Disponible')
+        valor_ventas = sum(c.precio for c in usuario.cuentas if c.estado == 'Vendida')
+        
+        output.write(f"Valor del Inventario: ${valor_inventario:.2f}\n")
+        output.write(f"Valor Total de Ventas: ${valor_ventas:.2f}\n")
+        
+        # Información adicional
+        if usuario.id == current_user.id:
+            output.write("NOTA: Este es tu usuario actual\n")
+        
+        output.write("\n" + "=" * 80 + "\n\n")
+    
+    # Escribir resumen final
+    output.write("RESUMEN FINAL DEL SISTEMA\n")
+    output.write("-" * 40 + "\n")
+    output.write(f"Total de usuarios exportados: {len(usuarios)}\n")
+    
+    # Estadísticas generales
+    total_cuentas_sistema = sum(len(u.cuentas) for u in usuarios)
+    total_cuentas_disponibles = sum(len([c for c in u.cuentas if c.estado == 'Disponible']) for u in usuarios)
+    total_cuentas_vendidas = sum(len([c for c in u.cuentas if c.estado == 'Vendida']) for u in usuarios)
+    valor_total_inventario = sum(sum(c.precio for c in u.cuentas if c.estado == 'Disponible') for u in usuarios)
+    valor_total_ventas = sum(sum(c.precio for c in u.cuentas if c.estado == 'Vendida') for u in usuarios)
+    
+    output.write(f"Total de cuentas en el sistema: {total_cuentas_sistema}\n")
+    output.write(f"Total de cuentas disponibles: {total_cuentas_disponibles}\n")
+    output.write(f"Total de cuentas vendidas: {total_cuentas_vendidas}\n")
+    output.write(f"Valor total del inventario: ${valor_total_inventario:.2f}\n")
+    output.write(f"Valor total de ventas: ${valor_total_ventas:.2f}\n")
+    output.write(f"Fecha de exportación: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")
+    output.write("=" * 80 + "\n")
+    
+    # Preparar respuesta
+    output.seek(0)
+    
+    # Generar nombre de archivo con fecha
+    fecha_actual = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'usuarios_sistema_{fecha_actual}.txt'
+    
+    # Crear respuesta con archivo de texto
+    response = send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/plain',
+        as_attachment=True,
+        download_name=filename
+    )
+    
+    # Agregar headers para evitar problemas de caché
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
+    return response
 
 def crear_admin_inicial():
     """Crear usuario administrador inicial si no existe"""

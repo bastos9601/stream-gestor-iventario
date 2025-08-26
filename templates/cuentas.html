@@ -39,6 +39,8 @@
                             <option value="">Todos los estados</option>
                             <option value="Disponible" {% if filtro_estado == 'Disponible' %}selected{% endif %}>Disponible</option>
                             <option value="Vendida" {% if filtro_estado == 'Vendida' %}selected{% endif %}>Vendida</option>
+                            <option value="Por Vencer" {% if filtro_estado == 'Por Vencer' %}selected{% endif %}>Por Vencer (7 días)</option>
+                            <option value="Vencida" {% if filtro_estado == 'Vencida' %}selected{% endif %}>Vencida</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -66,7 +68,7 @@
                      </div>
                      
                      <!-- Toggle de Vista -->
-                     <div class="col-md-1 d-flex align-items-end">
+                     <div class="col-md-2 d-flex align-items-end">
                          <div class="btn-group w-100" role="group">
                              <button type="button" class="btn btn-outline-secondary btn-sm" id="viewGrid" title="Vista de cuadrícula">
                                  <i class="fas fa-th-large"></i>
@@ -74,6 +76,26 @@
                              <button type="button" class="btn btn-outline-secondary btn-sm" id="viewList" title="Vista de lista">
                                  <i class="fas fa-list"></i>
                              </button>
+                         </div>
+                     </div>
+                     
+                     <!-- Botón Exportar Cuentas Vendidas -->
+                     <div class="col-md-2 d-flex align-items-end">
+                         <div class="d-grid gap-2 w-100">
+                             <a href="{{ url_for('exportar_cuentas_vendidas') }}" class="btn btn-success btn-sm">
+                                 <i class="fas fa-download me-2"></i>
+                                 Exportar Cuentas Vendidas (.txt)
+                             </a>
+                         </div>
+                     </div>
+                     
+                     <!-- Botón Exportar Cuentas Disponibles -->
+                     <div class="col-md-2 d-flex align-items-end">
+                         <div class="d-grid gap-2 w-100">
+                             <a href="{{ url_for('exportar_cuentas_disponibles') }}" class="btn btn-info btn-sm">
+                                 <i class="fas fa-download me-2"></i>
+                                 Exportar Cuentas Disponibles (.txt)
+                             </a>
                          </div>
                      </div>
                 </form>
@@ -173,20 +195,44 @@
                             <span class="badge bg-success fs-6">${{ "%.2f"|format(cuenta.precio) }}</span>
                         </div>
                         
-                        <div class="info-row mb-2">
-                            <small class="text-muted">Estado:</small>
-                            {% if cuenta.estado == 'Disponible' %}
-                                <span class="badge badge-disponible">
-                                    <i class="fas fa-check me-1"></i>Disponible
-                                </span>
-                            {% elif cuenta.estado == 'Vendida' %}
-                                <span class="badge badge-vendida">
-                                    <i class="fas fa-dollar-sign me-1"></i>Vendida
-                                </span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ cuenta.estado }}</span>
-                            {% endif %}
-                        </div>
+                                                 <div class="info-row mb-2">
+                             <small class="text-muted">Estado:</small>
+                             {% if cuenta.estado == 'Disponible' %}
+                                 <span class="badge badge-disponible">
+                                     <i class="fas fa-check me-1"></i>Disponible
+                                 </span>
+                             {% elif cuenta.estado == 'Vendida' %}
+                                 <span class="badge badge-vendida">
+                                     <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                 </span>
+                             {% else %}
+                                 <span class="badge bg-secondary">{{ cuenta.estado }}</span>
+                             {% endif %}
+                         </div>
+                         
+                         <div class="info-row mb-2">
+                             <small class="text-muted">Activa:</small>
+                             {% if cuenta.fecha_vencimiento %}
+                                 {% set dias_restantes = ((cuenta.fecha_vencimiento - today).days) %}
+                                 {% if dias_restantes > 0 %}
+                                     <span class="badge bg-success">
+                                         <i class="fas fa-check-circle me-1"></i>Activa
+                                     </span>
+                                 {% elif dias_restantes == 0 %}
+                                     <span class="badge bg-warning">
+                                         <i class="fas fa-exclamation-triangle me-1"></i>Vence Hoy
+                                     </span>
+                                 {% else %}
+                                     <span class="badge bg-danger">
+                                         <i class="fas fa-times-circle me-1"></i>Inactiva
+                                     </span>
+                                 {% endif %}
+                             {% else %}
+                                 <span class="badge bg-secondary">
+                                     <i class="fas fa-question-circle me-1"></i>Sin Fecha
+                                 </span>
+                             {% endif %}
+                         </div>
                         
                         <div class="info-row mb-2">
                             <small class="text-muted">Compra:</small>
@@ -237,6 +283,13 @@
                                 </button>
                             </form>
                             {% endif %}
+                            {% if cuenta.fecha_vencimiento %}
+                            <form method="POST" action="{{ url_for('renovar_cuenta', id=cuenta.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-info btn-sm" onclick="return confirm('¿Renovar esta cuenta por un mes más?')" title="Renovar por 1 mes">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </button>
+                            </form>
+                            {% endif %}
                             <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" class="d-inline">
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirmDelete()">
                                     <i class="fas fa-trash"></i>
@@ -259,17 +312,17 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Plataforma</th>
-                                    <th>Email</th>
-
-                                    <th>Precio</th>
-                                    <th>Estado</th>
-                                    <th>Fecha Compra</th>
-                                    <th>Fecha Venta</th>
-                                    <th>Vencimiento</th>
-                                    <th>Días Restantes</th>
-                                    <th>Acciones</th>
+                                                                     <th>ID</th>
+                                 <th>Plataforma</th>
+                                 <th>Email</th>
+                                 <th>Precio</th>
+                                 <th>Estado</th>
+                                 <th>Activa</th>
+                                 <th>Fecha Compra</th>
+                                 <th>Fecha Venta</th>
+                                 <th>Vencimiento</th>
+                                 <th>Días Restantes</th>
+                                 <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -294,20 +347,42 @@
                                     <td>
                                         <span class="badge bg-success">${{ "%.2f"|format(cuenta.precio) }}</span>
                                     </td>
-                                    <td>
-                                        {% if cuenta.estado == 'Disponible' %}
-                                            <span class="badge badge-disponible">
-                                                <i class="fas fa-check me-1"></i>Disponible
-                                            </span>
-                                        {% elif cuenta.estado == 'Vendida' %}
-                                            <span class="badge badge-vendida">
-                                                <i class="fas fa-dollar-sign me-1"></i>Vendida
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ cuenta.estado }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</td>
+                                                                         <td>
+                                         {% if cuenta.estado == 'Disponible' %}
+                                             <span class="badge badge-disponible">
+                                                 <i class="fas fa-check me-1"></i>Disponible
+                                             </span>
+                                         {% elif cuenta.estado == 'Vendida' %}
+                                             <span class="badge badge-vendida">
+                                                 <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                             </span>
+                                         {% else %}
+                                             <span class="badge bg-secondary">{{ cuenta.estado }}</span>
+                                         {% endif %}
+                                     </td>
+                                     <td>
+                                         {% if cuenta.fecha_vencimiento %}
+                                             {% set dias_restantes = ((cuenta.fecha_vencimiento - today).days) %}
+                                             {% if dias_restantes > 0 %}
+                                                 <span class="badge bg-success">
+                                                     <i class="fas fa-check-circle me-1"></i>Activa
+                                                 </span>
+                                             {% elif dias_restantes == 0 %}
+                                                 <span class="badge bg-warning">
+                                                     <i class="fas fa-exclamation-triangle me-1"></i>Vence Hoy
+                                                 </span>
+                                             {% else %}
+                                                 <span class="badge bg-danger">
+                                                     <i class="fas fa-times-circle me-1"></i>Inactiva
+                                                 </span>
+                                             {% endif %}
+                                         {% else %}
+                                             <span class="badge bg-secondary">
+                                                 <i class="fas fa-question-circle me-1"></i>Sin Fecha
+                                             </span>
+                                         {% endif %}
+                                     </td>
+                                     <td>{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</td>
                                     <td>
                                         {% if cuenta.fecha_venta %}
                                             <span class="text-success">{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
@@ -357,6 +432,15 @@
                                                 </button>
                                             </form>
                                             {% endif %}
+                                            {% if cuenta.fecha_vencimiento %}
+                                            <form method="POST" action="{{ url_for('renovar_cuenta', id=cuenta.id) }}" 
+                                                  class="d-inline" 
+                                                  onsubmit="return confirm('¿Renovar esta cuenta por un mes más?')">
+                                                <button type="submit" class="btn btn-sm btn-info" title="Renovar por 1 mes">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
                                             <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
                                                   class="d-inline" 
                                                   onsubmit="return confirmDelete()">
@@ -396,7 +480,7 @@
 <!-- Summary Cards -->
 {% if cuentas %}
 <div class="row mt-4">
-    <div class="col-md-3 col-sm-6 mb-3">
+    <div class="col-md-2 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
                 <h3 class="text-primary">{{ total_cuentas }}</h3>
@@ -404,7 +488,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
+    <div class="col-md-2 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
                 <h3 class="text-success">{{ cuentas_disponibles }}</h3>
@@ -412,7 +496,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
+    <div class="col-md-2 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
                 <h3 class="text-warning">{{ cuentas_vendidas }}</h3>
@@ -420,7 +504,23 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-sm-6 mb-3">
+    <div class="col-md-2 col-sm-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-danger">{{ cuentas_por_vencer }}</h3>
+                <p class="text-muted mb-0">Por Vencer</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-secondary">{{ cuentas_vencidas }}</h3>
+                <p class="text-muted mb-0">Vencidas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
                 <h3 class="text-info">${{ "%.2f"|format(valor_total_ventas) }}</h3>
@@ -444,6 +544,35 @@
 
 .badge-vendida {
     background-color: #dc3545 !important;
+    color: white !important;
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+/* Estilos para los badges de estado Activa */
+.badge-activa {
+    background-color: #198754 !important;
+    color: white !important;
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+.badge-inactiva {
+    background-color: #dc3545 !important;
+    color: white !important;
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+.badge-vence-hoy {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.65em !important;
+}
+
+.badge-sin-fecha {
+    background-color: #6c757d !important;
     color: white !important;
     font-size: 0.75rem !important;
     padding: 0.35em 0.65em !important;

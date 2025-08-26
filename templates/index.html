@@ -11,6 +11,10 @@
             {% if current_user.es_admin %}
                 <span class="badge bg-danger ms-2">Administrador</span>
             {% endif %}
+            <small class="text-muted ms-3">
+                <i class="fas fa-calendar me-1"></i>
+                <span id="fecha-hora"></span>
+            </small>
         </h1>
         <p class="lead text-muted">
             {% if current_user.es_admin %}
@@ -40,6 +44,12 @@
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
             <div class="stats-number">{{ cuentas_vendidas }}</div>
             <div class="stats-label">Vendidas</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+        <div class="stats-card text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <div class="stats-number">{{ cuentas_activas }}</div>
+            <div class="stats-label">Cuentas Activas</div>
         </div>
     </div>
     {% if current_user.es_admin %}
@@ -265,25 +275,34 @@
                                 </div>
                             </div>
                             
-                            <div class="card-footer bg-transparent py-2">
-                                <div class="btn-group w-100" role="group">
-                                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
-                                       class="btn btn-primary btn-sm" title="Ver detalles">
-                                        <i class="fas fa-eye me-1"></i>Ver
-                                    </a>
-                                    <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" 
-                                       class="btn btn-warning btn-sm" title="Editar">
-                                        <i class="fas fa-edit me-1"></i>Editar
-                                    </a>
-                                    <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
-                                          class="d-inline" 
-                                          onsubmit="return confirmDelete()">
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                            <i class="fas fa-trash me-1"></i>Eliminar
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                                                         <div class="card-footer bg-transparent py-2">
+                                 <div class="btn-group w-100" role="group">
+                                     <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
+                                        class="btn btn-primary btn-sm" title="Ver detalles">
+                                         <i class="fas fa-eye me-1"></i>Ver
+                                     </a>
+                                     <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" 
+                                        class="btn btn-warning btn-sm" title="Editar">
+                                         <i class="fas fa-edit me-1"></i>Editar
+                                     </a>
+                                     {% if cuenta.fecha_vencimiento %}
+                                     <form method="POST" action="{{ url_for('renovar_cuenta', id=cuenta.id) }}" 
+                                           class="d-inline" 
+                                           onsubmit="return confirm('¿Renovar esta cuenta por un mes más?')">
+                                         <button type="submit" class="btn btn-info btn-sm" title="Renovar por 1 mes">
+                                             <i class="fas fa-calendar-plus"></i>
+                                         </button>
+                                     </form>
+                                     {% endif %}
+                                     <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
+                                           class="d-inline" 
+                                           onsubmit="return confirmDelete()">
+                                         <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                             <i class="fas fa-trash me-1"></i>Eliminar
+                                         </button>
+                                     </form>
+                                 </div>
+                             </div>
                         </div>
                     </div>
                     {% endfor %}
@@ -376,14 +395,23 @@
                                     </div>
                                 </div>
                                 
-                                <div class="card-footer bg-transparent py-2">
-                                    <div class="d-grid">
-                                        <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
-                                           class="btn btn-primary btn-sm">
-                                            <i class="fas fa-eye me-1"></i>Ver Detalles
-                                        </a>
-                                    </div>
-                                </div>
+                                                                 <div class="card-footer bg-transparent py-2">
+                                     <div class="btn-group w-100" role="group">
+                                         <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
+                                            class="btn btn-primary btn-sm">
+                                             <i class="fas fa-eye me-1"></i>Ver
+                                         </a>
+                                         {% if cuenta.fecha_vencimiento %}
+                                         <form method="POST" action="{{ url_for('renovar_cuenta', id=cuenta.id) }}" 
+                                               class="d-inline" 
+                                               onsubmit="return confirm('¿Renovar esta cuenta por un mes más?')">
+                                             <button type="submit" class="btn btn-info btn-sm" title="Renovar por 1 mes">
+                                                 <i class="fas fa-calendar-plus"></i>
+                                             </button>
+                                         </form>
+                                         {% endif %}
+                                     </div>
+                                 </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -483,6 +511,26 @@
 
 {% block scripts %}
 <script>
+// Función para actualizar fecha y hora
+function actualizarFechaHora() {
+    const ahora = new Date();
+    const opciones = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
+    
+    const fechaHora = ahora.toLocaleDateString('es-ES', opciones);
+    document.getElementById('fecha-hora').textContent = fechaHora;
+}
+
+// Actualizar fecha y hora cada segundo
+setInterval(actualizarFechaHora, 1000);
+
 // Chart.js configuration
 document.addEventListener('DOMContentLoaded', function() {
     const chartCanvas = document.getElementById('plataformasChart');
@@ -650,6 +698,23 @@ function confirmDelete() {
     padding: 0.5rem;
 }
 
+/* Estilos para el grupo de botones en tarjetas mini */
+.account-mini-card .btn-group .btn {
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.account-mini-card .btn-group .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.account-mini-card .btn-group .btn:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 /* Estilos para las tarjetas de alerta */
 .alert-account-card {
     transition: all 0.3s ease;
@@ -701,6 +766,23 @@ function confirmDelete() {
     padding: 0.5rem;
 }
 
+/* Estilos para el grupo de botones en tarjetas de alerta */
+.alert-account-card .btn-group .btn {
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.alert-account-card .btn-group .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.alert-account-card .btn-group .btn:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 /* Bordes de urgencia para alertas */
 .alert-account-card.border-danger {
     border-color: #dc3545 !important;
@@ -727,6 +809,13 @@ function confirmDelete() {
     color: white !important;
     font-size: 0.7rem !important;
     padding: 0.25em 0.5em !important;
+}
+
+/* Estilos para la fecha y hora */
+#fecha-hora {
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.8;
 }
 
 /* Responsive adjustments */
