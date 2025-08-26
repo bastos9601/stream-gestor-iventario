@@ -14,6 +14,8 @@ services:
         fromDatabase:
           name: gestor-cuentas-db
           property: connectionString
+      - key: PYTHON
+        value: 3.11.7
 
 databases:
   - name: gestor-cuentas-db
