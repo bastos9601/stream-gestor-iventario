@@ -52,37 +52,209 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <div class="d-grid gap-2 w-100">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i>
-                                Filtrar
-                            </button>
-                            <a href="{{ url_for('cuentas') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>
-                                Limpiar
-                            </a>
-                        </div>
-                    </div>
+                                         <div class="col-md-3 d-flex align-items-end">
+                         <div class="d-grid gap-2 w-100">
+                             <button type="submit" class="btn btn-primary">
+                                 <i class="fas fa-search me-2"></i>
+                                 Filtrar
+                             </button>
+                             <a href="{{ url_for('cuentas') }}" class="btn btn-outline-secondary">
+                                 <i class="fas fa-times me-2"></i>
+                                 Limpiar
+                             </a>
+                         </div>
+                     </div>
+                     
+                     <!-- Toggle de Vista -->
+                     <div class="col-md-1 d-flex align-items-end">
+                         <div class="btn-group w-100" role="group">
+                             <button type="button" class="btn btn-outline-secondary btn-sm" id="viewGrid" title="Vista de cuadrícula">
+                                 <i class="fas fa-th-large"></i>
+                             </button>
+                             <button type="button" class="btn btn-outline-secondary btn-sm" id="viewList" title="Vista de lista">
+                                 <i class="fas fa-list"></i>
+                             </button>
+                         </div>
+                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Accounts Table -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-table me-2"></i>
-                    Lista de Cuentas
-                    <span class="badge bg-primary ms-2">{{ cuentas|length }}</span>
-                </h5>
+ <!-- Accounts Cards -->
+ <div class="row">
+     <div class="col-12">
+         <div class="d-flex justify-content-between align-items-center mb-3">
+             <h5 class="mb-0">
+                 <i class="fas fa-th-large me-2"></i>
+                 Lista de Cuentas
+                 <span class="badge bg-primary ms-2">{{ cuentas|length }}</span>
+             </h5>
+         </div>
+     </div>
+ </div>
+
+{% if cuentas %}
+    <!-- Grid View (Default) -->
+    <div class="row" id="gridView">
+        {% for cuenta in cuentas %}
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="card account-card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="badge bg-secondary">#{{ cuenta.id }}</span>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('ver_cuenta', id=cuenta.id) }}">
+                                <i class="fas fa-eye me-2"></i>Ver detalles
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('editar_cuenta', id=cuenta.id) }}">
+                                <i class="fas fa-edit me-2"></i>Editar
+                            </a></li>
+                            {% if cuenta.estado == 'Disponible' %}
+                            <li>
+                                <form method="POST" action="{{ url_for('vender_cuenta', id=cuenta.id) }}" class="d-inline">
+                                    <button type="submit" class="dropdown-item" onclick="return confirm('¿Marcar esta cuenta como vendida?')">
+                                        <i class="fas fa-dollar-sign me-2"></i>Marcar como vendida
+                                    </button>
+                                </form>
+                            </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" class="d-inline">
+                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirmDelete()">
+                                        <i class="fas fa-trash me-2"></i>Eliminar
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="platform-icon mb-2">
+                            {% if cuenta.plataforma == 'Netflix' %}
+                                <i class="fas fa-tv fa-2x text-danger"></i>
+                            {% elif cuenta.plataforma == 'Hulu' %}
+                                <i class="fas fa-tv fa-2x text-success"></i>
+                            {% elif cuenta.plataforma == 'Disney+' %}
+                                <i class="fas fa-tv fa-2x text-primary"></i>
+                            {% elif cuenta.plataforma == 'Amazon Prime' %}
+                                <i class="fas fa-tv fa-2x text-warning"></i>
+                            {% elif cuenta.plataforma == 'Apple TV+' %}
+                                <i class="fas fa-tv fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-tv fa-2x text-info"></i>
+                            {% endif %}
+                        </div>
+                        <h6 class="card-title mb-1">{{ cuenta.plataforma }}</h6>
+                    </div>
+                    
+                    <div class="account-info">
+                        <div class="info-row mb-2">
+                            <small class="text-muted">Email:</small>
+                            <div class="d-flex align-items-center">
+                                <code class="me-2">{{ cuenta.email }}</code>
+                                <button class="btn btn-sm btn-outline-secondary" 
+                                        onclick="copyToClipboard('{{ cuenta.email }}')"
+                                        title="Copiar email">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="info-row mb-2">
+                            <small class="text-muted">Precio:</small>
+                            <span class="badge bg-success fs-6">${{ "%.2f"|format(cuenta.precio) }}</span>
+                        </div>
+                        
+                        <div class="info-row mb-2">
+                            <small class="text-muted">Estado:</small>
+                            {% if cuenta.estado == 'Disponible' %}
+                                <span class="badge badge-disponible">
+                                    <i class="fas fa-check me-1"></i>Disponible
+                                </span>
+                            {% elif cuenta.estado == 'Vendida' %}
+                                <span class="badge badge-vendida">
+                                    <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ cuenta.estado }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="info-row mb-2">
+                            <small class="text-muted">Compra:</small>
+                            <span>{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</span>
+                        </div>
+                        
+                        {% if cuenta.fecha_venta %}
+                        <div class="info-row mb-2">
+                            <small class="text-muted">Venta:</small>
+                            <span class="text-success">{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if cuenta.fecha_vencimiento %}
+                        <div class="info-row mb-2">
+                            <small class="text-muted">Vencimiento:</small>
+                            <div class="d-flex flex-column align-items-end">
+                                <span class="text-warning">{{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') }}</span>
+                                {% set dias_restantes = ((cuenta.fecha_vencimiento - today).days) %}
+                                {% if dias_restantes > 0 %}
+                                    <small class="text-info">{{ dias_restantes }} día{{ 's' if dias_restantes != 1 else '' }} restante{{ 's' if dias_restantes != 1 else '' }}</small>
+                                {% elif dias_restantes == 0 %}
+                                    <small class="text-danger">Vence hoy</small>
+                                {% else %}
+                                    <small class="text-danger">Vencida hace {{ dias_restantes|abs }} día{{ 's' if dias_restantes|abs != 1 else '' }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>Ver Detalles
+                        </a>
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if cuenta.estado == 'Disponible' %}
+                            <form method="POST" action="{{ url_for('vender_cuenta', id=cuenta.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('¿Marcar esta cuenta como vendida?')">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirmDelete()">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                {% if cuentas %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- List View (Hidden by default) -->
+    <div class="row d-none" id="listView">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -90,10 +262,13 @@
                                     <th>ID</th>
                                     <th>Plataforma</th>
                                     <th>Email</th>
+
                                     <th>Precio</th>
                                     <th>Estado</th>
                                     <th>Fecha Compra</th>
                                     <th>Fecha Venta</th>
+                                    <th>Vencimiento</th>
+                                    <th>Días Restantes</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -115,6 +290,7 @@
                                             <i class="fas fa-copy"></i>
                                         </button>
                                     </td>
+                                    
                                     <td>
                                         <span class="badge bg-success">${{ "%.2f"|format(cuenta.precio) }}</span>
                                     </td>
@@ -135,6 +311,27 @@
                                     <td>
                                         {% if cuenta.fecha_venta %}
                                             <span class="text-success">{{ cuenta.fecha_venta.strftime('%d/%m/%Y') }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if cuenta.fecha_vencimiento %}
+                                            <span class="text-warning">{{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if cuenta.fecha_vencimiento %}
+                                            {% set dias_restantes = ((cuenta.fecha_vencimiento - today).days) %}
+                                            {% if dias_restantes > 0 %}
+                                                <span class="text-info">{{ dias_restantes }} día{{ 's' if dias_restantes != 1 else '' }}</span>
+                                            {% elif dias_restantes == 0 %}
+                                                <span class="text-danger">Hoy</span>
+                                            {% else %}
+                                                <span class="text-danger">{{ dias_restantes|abs }} día{{ 's' if dias_restantes|abs != 1 else '' }}</span>
+                                            {% endif %}
                                         {% else %}
                                             <span class="text-muted">-</span>
                                         {% endif %}
@@ -174,25 +371,27 @@
                             </tbody>
                         </table>
                     </div>
-                {% else %}
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-search fa-3x mb-3"></i>
-                        <h4>No se encontraron cuentas</h4>
-                        <p>No hay cuentas que coincidan con los filtros aplicados</p>
-                        <a href="{{ url_for('cuentas') }}" class="btn btn-outline-primary me-2">
-                            <i class="fas fa-list me-2"></i>
-                            Ver todas
-                        </a>
-                        <a href="{{ url_for('nueva_cuenta') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>
-                            Agregar cuenta
-                        </a>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
+{% else %}
+    <div class="col-12">
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-search fa-3x mb-3"></i>
+            <h4>No se encontraron cuentas</h4>
+            <p>No hay cuentas que coincidan con los filtros aplicados</p>
+            <a href="{{ url_for('cuentas') }}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-list me-2"></i>
+                Ver todas
+            </a>
+            <a href="{{ url_for('nueva_cuenta') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Agregar cuenta
+            </a>
+        </div>
+    </div>
+{% endif %}
 
 <!-- Summary Cards -->
 {% if cuentas %}
@@ -200,7 +399,7 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-primary">{{ cuentas|length }}</h3>
+                <h3 class="text-primary">{{ total_cuentas }}</h3>
                 <p class="text-muted mb-0">Total filtrado</p>
             </div>
         </div>
@@ -208,7 +407,7 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-success">{{ cuentas|selectattr('estado', 'equalto', 'Disponible')|list|length }}</h3>
+                <h3 class="text-success">{{ cuentas_disponibles }}</h3>
                 <p class="text-muted mb-0">Disponibles</p>
             </div>
         </div>
@@ -216,7 +415,7 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-warning">{{ cuentas|selectattr('estado', 'equalto', 'Vendida')|list|length }}</h3>
+                <h3 class="text-warning">{{ cuentas_vendidas }}</h3>
                 <p class="text-muted mb-0">Vendidas</p>
             </div>
         </div>
@@ -224,8 +423,8 @@
     <div class="col-md-3 col-sm-6 mb-3">
         <div class="card text-center">
             <div class="card-body">
-                <h3 class="text-info">{{ cuentas|selectattr('estado', 'equalto', 'Disponible')|list|length }}</h3>
-                <p class="text-muted mb-0">Disponibles</p>
+                <h3 class="text-info">${{ "%.2f"|format(valor_total_ventas) }}</h3>
+                <p class="text-muted mb-0">Total Ventas</p>
             </div>
         </div>
     </div>
@@ -250,7 +449,58 @@
     padding: 0.35em 0.65em !important;
 }
 
-/* Mejorar la apariencia de la tabla */
+/* Estilos para las tarjetas de cuentas */
+.account-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.account-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.account-card .platform-icon {
+    color: #6c757d;
+}
+
+.account-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.account-info .info-row small {
+    font-weight: 500;
+}
+
+.account-info code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-card .card-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 0.75rem;
+}
+
+.account-card .btn-group .btn {
+    flex: 1;
+}
+
+/* Mejorar la apariencia de la tabla en vista de lista */
 .table th {
     background-color: #6f42c1 !important;
     color: white !important;
@@ -262,13 +512,39 @@
     vertical-align: middle !important;
 }
 
-/* Estilos para los botones de acción */
-.btn-group .btn {
-    margin-right: 2px !important;
-}
+ /* Estilos para los botones de acción */
+ .btn-group .btn {
+     margin-right: 2px !important;
+ }
+ 
+ .btn-group .btn:last-child {
+     margin-right: 0 !important;
+ }
+ 
+ /* Estilos para el toggle de vista */
+ .btn-group .btn.active {
+     background-color: #6f42c1 !important;
+     border-color: #6f42c1 !important;
+     color: white !important;
+ }
+ 
+ .btn-group .btn:hover {
+     background-color: #6f42c1 !important;
+     border-color: #6f42c1 !important;
+     color: white !important;
+ }
 
-.btn-group .btn:last-child {
-    margin-right: 0 !important;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .account-info .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .account-info code {
+        max-width: 100%;
+    }
 }
 </style>
 
@@ -282,10 +558,48 @@ document.getElementById('plataforma').addEventListener('change', function() {
     this.form.submit();
 });
 
+// Toggle between grid and list view
+document.getElementById('viewGrid').addEventListener('click', function() {
+    document.getElementById('gridView').classList.remove('d-none');
+    document.getElementById('listView').classList.add('d-none');
+    this.classList.add('active');
+    document.getElementById('viewList').classList.remove('active');
+});
+
+document.getElementById('viewList').addEventListener('click', function() {
+    document.getElementById('gridView').classList.add('d-none');
+    document.getElementById('listView').classList.remove('d-none');
+    this.classList.add('active');
+    document.getElementById('viewGrid').classList.remove('active');
+});
+
+// Set grid view as active by default
+document.getElementById('viewGrid').classList.add('active');
+
 // Search functionality (you can implement this if needed)
 function searchAccounts(query) {
     // Implementation for search functionality
     console.log('Searching for:', query);
+}
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const button = event.target.closest('button');
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalIcon;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Error copying text: ', err);
+    });
 }
 </script>
 {% endblock %}

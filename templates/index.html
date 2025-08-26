@@ -42,24 +42,18 @@
             <div class="stats-label">Vendidas</div>
         </div>
     </div>
+    {% if current_user.es_admin %}
     <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="stats-card text-center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
             <div class="stats-number">
-                {% if current_user.es_admin %}
-                    {{ usuarios_stats|length if usuarios_stats else 0 }}
-                {% else %}
-                    {{ ultimas_cuentas|length }}
-                {% endif %}
+                {{ usuarios_stats|length if usuarios_stats else 0 }}
             </div>
             <div class="stats-label">
-                {% if current_user.es_admin %}
-                    Usuarios Activos
-                {% else %}
-                    Mis Cuentas
-                {% endif %}
+                Usuarios Activos
             </div>
         </div>
     </div>
+    {% endif %}
     <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
         <div class="stats-card text-center valor-inventario">
             <div class="stats-number">
@@ -70,6 +64,28 @@
                 {% endif %}
             </div>
             <div class="stats-label">Valor del Inventario</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+        <div class="stats-card text-center" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+            <div class="stats-number">
+                {% if current_user.es_admin %}
+                    ${{ "%.2f"|format(valor_total_ventas_admin|float) if valor_total_ventas_admin else "0.00" }}
+                {% else %}
+                    ${{ "%.2f"|format(valor_total_ventas_usuario|float) if valor_total_ventas_usuario else "0.00" }}
+                {% endif %}
+            </div>
+            <div class="stats-label">Total Ventas</div>
+        </div>
+    </div>
+    
+    <!-- Cuentas por Vencer -->
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+        <div class="stats-card text-center" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+            <div class="stats-number">
+                {{ total_cuentas_por_vencer if total_cuentas_por_vencer else 0 }}
+            </div>
+            <div class="stats-label">Por Vencer</div>
         </div>
     </div>
 </div>
@@ -153,6 +169,131 @@
     </div>
 </div>
 
+<!-- Alertas de Cuentas Próximas a Vencer -->
+{% if cuentas_proximas_vencer %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ⚠️ Alertas: Cuentas Próximas a Vencer
+                    <span class="badge bg-danger ms-2">{{ cuentas_proximas_vencer|length }}</span>
+                </h5>
+                <small class="text-dark">Cuentas que vencen en los próximos 7 días</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for cuenta in cuentas_proximas_vencer %}
+                    {% set dias_restantes = ((cuenta.fecha_vencimiento - today).days) %}
+                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-3">
+                        <div class="card alert-account-card h-100 shadow-sm {% if dias_restantes <= 2 %}border-danger{% elif dias_restantes <= 4 %}border-warning{% else %}border-info{% endif %}">
+                            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                <span class="badge bg-secondary">#{{ cuenta.id }}</span>
+                                <div class="d-flex align-items-center">
+                                    {% if dias_restantes == 0 %}
+                                        <span class="badge bg-danger me-2">VENCE HOY</span>
+                                    {% elif dias_restantes == 1 %}
+                                        <span class="badge bg-danger me-2">1 día</span>
+                                    {% elif dias_restantes <= 3 %}
+                                        <span class="badge bg-warning me-2">{{ dias_restantes }} días</span>
+                                    {% else %}
+                                        <span class="badge bg-info me-2">{{ dias_restantes }} días</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-body py-2">
+                                <div class="text-center mb-2">
+                                    <div class="platform-icon mb-1">
+                                        {% if cuenta.plataforma == 'Netflix' %}
+                                            <i class="fas fa-tv fa-2x text-danger"></i>
+                                        {% elif cuenta.plataforma == 'Hulu' %}
+                                            <i class="fas fa-tv fa-2x text-success"></i>
+                                        {% elif cuenta.plataforma == 'Disney+' %}
+                                            <i class="fas fa-tv fa-2x text-primary"></i>
+                                        {% elif cuenta.plataforma == 'Amazon Prime' %}
+                                            <i class="fas fa-tv fa-2x text-warning"></i>
+                                        {% elif cuenta.plataforma == 'Apple TV+' %}
+                                            <i class="fas fa-tv fa-2x text-secondary"></i>
+                                        {% else %}
+                                            <i class="fas fa-tv fa-2x text-info"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="card-title mb-1">{{ cuenta.plataforma }}</h6>
+                                </div>
+                                
+                                <div class="alert-account-info">
+                                    <div class="info-row mb-1">
+                                        <small class="text-muted">Email:</small>
+                                        <div class="d-flex align-items-center">
+                                            <code class="me-1">{{ cuenta.email[:20] }}{% if cuenta.email|length > 20 %}...{% endif %}</code>
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    onclick="copyToClipboard('{{ cuenta.email }}')"
+                                                    title="Copiar email">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row mb-1">
+                                        <small class="text-muted">Estado:</small>
+                                        {% if cuenta.estado == 'Disponible' %}
+                                            <span class="badge badge-disponible">
+                                                <i class="fas fa-check me-1"></i>Disponible
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-vendida">
+                                                <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="info-row mb-1">
+                                        <small class="text-muted">Vence:</small>
+                                        <strong>{{ cuenta.fecha_vencimiento.strftime('%d/%m/%Y') }}</strong>
+                                    </div>
+                                    
+
+                                    
+                                    {% if current_user.es_admin %}
+                                    <div class="info-row mb-1">
+                                        <small class="text-muted">Usuario:</small>
+                                        <span class="badge bg-info">{{ cuenta.usuario.username if cuenta.usuario else 'N/A' }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-transparent py-2">
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
+                                       class="btn btn-primary btn-sm" title="Ver detalles">
+                                        <i class="fas fa-eye me-1"></i>Ver
+                                    </a>
+                                    <a href="{{ url_for('editar_cuenta', id=cuenta.id) }}" 
+                                       class="btn btn-warning btn-sm" title="Editar">
+                                        <i class="fas fa-edit me-1"></i>Editar
+                                    </a>
+                                    <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" 
+                                          class="d-inline" 
+                                          onsubmit="return confirmDelete()">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash me-1"></i>Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Recent Accounts -->
 <div class="row">
     <div class="col-12">
@@ -169,64 +310,83 @@
             </div>
             <div class="card-body">
                 {% if ultimas_cuentas %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Plataforma</th>
-                                    <th>Email</th>
-                                    <th>Estado</th>
-                                    <th>Fecha</th>
-                                    {% if current_user.es_admin %}
-                                    <th>Usuario</th>
-                                    {% endif %}
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for cuenta in ultimas_cuentas %}
-                                <tr>
-                                    <td>
-                                        <i class="fas fa-tv me-2"></i>
-                                        {{ cuenta.plataforma }}
-                                    </td>
-                                    <td>
-                                        <code>{{ cuenta.email }}</code>
-                                        <button class="btn btn-sm btn-outline-secondary ms-2" 
-                                                onclick="copyToClipboard('{{ cuenta.email }}')"
-                                                title="Copiar email">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </td>
-                                    <td>
-                                        {% if cuenta.estado == 'Disponible' %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-check me-1"></i>Disponible
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-warning">
-                                                <i class="fas fa-dollar-sign me-1"></i>Vendida
-                                            </span>
+                    <div class="row">
+                        {% for cuenta in ultimas_cuentas %}
+                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="card account-mini-card h-100 shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                    <span class="badge bg-secondary">#{{ cuenta.id }}</span>
+                                    <small class="text-muted">{{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}</small>
+                                </div>
+                                
+                                <div class="card-body py-2">
+                                    <div class="text-center mb-2">
+                                        <div class="platform-icon mb-1">
+                                            {% if cuenta.plataforma == 'Netflix' %}
+                                                <i class="fas fa-tv fa-2x text-danger"></i>
+                                            {% elif cuenta.plataforma == 'Hulu' %}
+                                                <i class="fas fa-tv fa-2x text-success"></i>
+                                            {% elif cuenta.plataforma == 'Disney+' %}
+                                                <i class="fas fa-tv fa-2x text-primary"></i>
+                                            {% elif cuenta.plataforma == 'Amazon Prime' %}
+                                                <i class="fas fa-tv fa-2x text-warning"></i>
+                                            {% elif cuenta.plataforma == 'Apple TV+' %}
+                                                <i class="fas fa-tv fa-2x text-secondary"></i>
+                                            {% else %}
+                                                <i class="fas fa-tv fa-2x text-info"></i>
+                                            {% endif %}
+                                        </div>
+                                        <h6 class="card-title mb-1">{{ cuenta.plataforma }}</h6>
+                                    </div>
+                                    
+                                    <div class="account-mini-info">
+                                        <div class="info-row mb-1">
+                                            <small class="text-muted">Email:</small>
+                                            <div class="d-flex align-items-center">
+                                                <code class="me-1">{{ cuenta.email[:20] }}{% if cuenta.email|length > 20 %}...{% endif %}</code>
+                                                <button class="btn btn-sm btn-outline-secondary" 
+                                                        onclick="copyToClipboard('{{ cuenta.email }}')"
+                                                        title="Copiar email">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-row mb-1">
+                                            <small class="text-muted">Estado:</small>
+                                            {% if cuenta.estado == 'Disponible' %}
+                                                <span class="badge badge-disponible">
+                                                    <i class="fas fa-check me-1"></i>Disponible
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-vendida">
+                                                    <i class="fas fa-dollar-sign me-1"></i>Vendida
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+
+                                        
+                                        {% if current_user.es_admin %}
+                                        <div class="info-row mb-1">
+                                            <small class="text-muted">Usuario:</small>
+                                            <span class="badge bg-info">{{ cuenta.usuario.username if cuenta.usuario else 'N/A' }}</span>
+                                        </div>
                                         {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ cuenta.fecha_creacion.strftime('%d/%m/%Y') if cuenta.fecha_creacion else 'N/A' }}
-                                    </td>
-                                    {% if current_user.es_admin %}
-                                    <td>
-                                        <span class="badge bg-info">{{ cuenta.usuario.username if cuenta.usuario else 'N/A' }}</span>
-                                    </td>
-                                    {% endif %}
-                                    <td>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent py-2">
+                                    <div class="d-grid">
                                         <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" 
-                                           class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i>
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>Ver Detalles
                                         </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 {% else %}
                     <div class="text-center text-muted py-4">
@@ -319,7 +479,6 @@
     </div>
 </div>
 {% endif %}
-
 {% endblock %}
 
 {% block scripts %}
@@ -391,26 +550,200 @@ document.addEventListener('DOMContentLoaded', function() {
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         // Show success message
-        const toast = document.createElement('div');
-        toast.className = 'position-fixed top-0 end-0 p-3';
-        toast.style.zIndex = '1050';
-        toast.innerHTML = `
-            <div class="toast show" role="alert">
-                <div class="toast-header">
-                    <strong class="me-auto">Copiado</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    Texto copiado al portapapeles
-                </div>
-            </div>
-        `;
-        document.body.appendChild(toast);
+        const button = event.target.closest('button');
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
         
         setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 3000);
+            button.innerHTML = originalIcon;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Error copying text: ', err);
     });
 }
+
+// Confirm delete function
+function confirmDelete() {
+    return confirm('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción no se puede deshacer.');
+}
+
+
 </script>
+
+<style>
+/* Estilos para las tarjetas de estadísticas */
+.stats-card {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Estilos para las tarjetas mini de cuentas */
+.account-mini-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.account-mini-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
+}
+
+.account-mini-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.5rem 0.75rem;
+}
+
+.account-mini-card .platform-icon {
+    color: #6c757d;
+}
+
+.account-mini-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.15rem 0;
+}
+
+.account-mini-info .info-row small {
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.account-mini-info code {
+    background-color: #f8f9fa;
+    padding: 0.15rem 0.3rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-mini-card .card-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 0.5rem;
+}
+
+/* Estilos para las tarjetas de alerta */
+.alert-account-card {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.alert-account-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+
+
+.alert-account-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.5rem 0.75rem;
+}
+
+.alert-account-card .platform-icon {
+    color: #6c757d;
+}
+
+.alert-account-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.15rem 0;
+}
+
+.alert-account-info .info-row small {
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.alert-account-info code {
+    background-color: #f8f9fa;
+    padding: 0.15rem 0.3rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.alert-account-card .card-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 0.5rem;
+}
+
+/* Bordes de urgencia para alertas */
+.alert-account-card.border-danger {
+    border-color: #dc3545 !important;
+}
+
+.alert-account-card.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.alert-account-card.border-info {
+    border-color: #0dcaf0 !important;
+}
+
+/* Estilos para los badges del estado */
+.badge-disponible {
+    background-color: #198754 !important;
+    color: white !important;
+    font-size: 0.7rem !important;
+    padding: 0.25em 0.5em !important;
+}
+
+.badge-vendida {
+    background-color: #dc3545 !important;
+    color: white !important;
+    font-size: 0.7rem !important;
+    padding: 0.25em 0.5em !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .account-mini-info .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.15rem;
+    }
+    
+    .account-mini-info code {
+        max-width: 100%;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+    }
+}
+</style>
 {% endblock %}

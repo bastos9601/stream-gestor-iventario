@@ -180,6 +180,66 @@
             border: none;
         }
         
+        /* Estilos para flash messages */
+        .flash-message {
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid;
+            animation: slideInDown 0.5s ease;
+        }
+        
+        .flash-message.alert-success {
+            border-left-color: var(--success-color);
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+        
+        .flash-message.alert-danger {
+            border-left-color: var(--danger-color);
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+        
+        .flash-message.alert-warning {
+            border-left-color: var(--warning-color);
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+        
+        .flash-message.alert-info {
+            border-left-color: var(--info-color);
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+        
+        /* Animación de entrada */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Efecto de fade-out */
+        .flash-message.fade {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        /* Botón de cerrar personalizado */
+        .flash-message .btn-close {
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .flash-message .btn-close:hover {
+            opacity: 1;
+        }
+        
         .form-control {
             border-radius: 10px;
             border: 2px solid #e9ecef;
@@ -491,6 +551,20 @@
 
     <!-- Main Content -->
     <div class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div id="flash-messages-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show flash-message" role="alert" data-auto-hide="20000">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
         {% block content %}{% endblock %}
     </div>
 
@@ -502,6 +576,51 @@
     
     <!-- Custom Scripts -->
     {% block scripts %}{% endblock %}
+    
+    <!-- Auto-hide Flash Messages Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide flash messages after 20 seconds
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            flashMessages.forEach(function(message) {
+                const autoHideTime = message.getAttribute('data-auto-hide') || 5000;
+                
+                setTimeout(function() {
+                    // Add fade-out effect
+                    message.classList.add('fade');
+                    message.style.opacity = '0';
+                    message.style.transition = 'opacity 0.5s ease';
+                    
+                    // Remove from DOM after fade-out
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.parentNode.removeChild(message);
+                        }
+                    }, 500);
+                }, autoHideTime);
+            });
+            
+            // Manual close button functionality
+            const closeButtons = document.querySelectorAll('.btn-close');
+            closeButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const alert = this.closest('.alert');
+                    if (alert) {
+                        alert.classList.add('fade');
+                        alert.style.opacity = '0';
+                        alert.style.transition = 'opacity 0.5s ease';
+                        
+                        setTimeout(function() {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
     
     <!-- Service Worker Registration (temporarily disabled for debugging) -->
     <!--

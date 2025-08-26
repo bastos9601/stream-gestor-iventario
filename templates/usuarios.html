@@ -13,87 +13,228 @@
                 </a>
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            
 
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Usuario</th>
-                                    <th>Email</th>
-                                    <th>Tipo</th>
-                                    <th>Estado</th>
-                                    <th>Fecha Creación</th>
-                                    <th>Cuentas</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for usuario in usuarios %}
-                                <tr>
-                                    <td>{{ usuario.id }}</td>
-                                    <td>
-                                        <strong>{{ usuario.username }}</strong>
+            <!-- Vista de Tarjetas (Predeterminada) -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-th-large me-2"></i>
+                    Lista de Usuarios
+                    <span class="badge bg-primary ms-2">{{ usuarios|length }}</span>
+                </h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="viewGrid" title="Vista de cuadrícula">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="viewList" title="Vista de lista">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            {% if usuarios %}
+                <!-- Grid View (Default) -->
+                <div class="row" id="gridView">
+                    {% for usuario in usuarios %}
+                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-4">
+                        <div class="card user-card h-100 shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge bg-secondary">#{{ usuario.id }}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('editar_usuario', id=usuario.id) }}">
+                                            <i class="fas fa-edit me-2"></i>Editar
+                                        </a></li>
+                                        {% if usuario.id != current_user.id %}
+                                        <li>
+                                            <button type="button" class="dropdown-item text-danger" 
+                                                    onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.username }}')">
+                                                <i class="fas fa-trash me-2"></i>Eliminar
+                                            </button>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <div class="user-avatar mb-2">
+                                        {% if usuario.es_admin %}
+                                            <i class="fas fa-user-shield fa-3x text-danger"></i>
+                                        {% else %}
+                                            <i class="fas fa-user fa-3x text-primary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="card-title mb-1">
+                                        {{ usuario.username }}
                                         {% if usuario.id == current_user.id %}
                                             <span class="badge bg-primary ms-2">Tú</span>
                                         {% endif %}
-                                    </td>
-                                    <td>{{ usuario.email }}</td>
-                                    <td>
-                                        {% if usuario.es_admin %}
-                                            <span class="badge bg-danger">Administrador</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Usuario</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if usuario.activo %}
-                                            <span class="badge bg-success">Activo</span>
-                                        {% else %}
-                                            <span class="badge bg-warning">Inactivo</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ usuario.fecha_creacion.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>
-                                        <span class="badge bg-info">{{ usuario.cuentas|length }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ url_for('editar_usuario', id=usuario.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" 
-                                               title="Editar">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            
-                                            {% if usuario.id != current_user.id %}
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-outline-danger" 
-                                                        title="Eliminar"
-                                                        onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.username }}')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            {% endif %}
+                                    </h6>
+                                </div>
+                                
+                                <div class="user-info">
+                                    <div class="info-row mb-2">
+                                        <small class="text-muted">Email:</small>
+                                        <div class="d-flex align-items-center">
+                                            <code class="me-2">{{ usuario.email }}</code>
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    onclick="copyToClipboard('{{ usuario.email }}')"
+                                                    title="Copiar email">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
                                         </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                    </div>
+                                    
+                                    <div class="info-row mb-2">
+                                        <small class="text-muted">Tipo:</small>
+                                        {% if usuario.es_admin %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-shield-alt me-1"></i>Administrador
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-user me-1"></i>Usuario
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="info-row mb-2">
+                                        <small class="text-muted">Estado:</small>
+                                        {% if usuario.activo %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Activo
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Inactivo
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="info-row mb-2">
+                                        <small class="text-muted">Creación:</small>
+                                        <span>{{ usuario.fecha_creacion.strftime('%d/%m/%Y') }}</span>
+                                    </div>
+                                    
+                                    <div class="info-row mb-2">
+                                        <small class="text-muted">Cuentas:</small>
+                                        <span class="badge bg-info fs-6">{{ usuario.cuentas|length }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('editar_usuario', id=usuario.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Editar
+                                    </a>
+                                    {% if usuario.id != current_user.id %}
+                                    <button type="button" 
+                                            class="btn btn-danger btn-sm" 
+                                            onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.username }}')">
+                                        <i class="fas fa-trash me-1"></i>Eliminar
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- List View (Hidden by default) -->
+                <div class="row d-none" id="listView">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Usuario</th>
+                                                <th>Email</th>
+                                                <th>Tipo</th>
+                                                <th>Estado</th>
+                                                <th>Fecha Creación</th>
+                                                <th>Cuentas</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for usuario in usuarios %}
+                                            <tr>
+                                                <td>{{ usuario.id }}</td>
+                                                <td>
+                                                    <strong>{{ usuario.username }}</strong>
+                                                    {% if usuario.id == current_user.id %}
+                                                        <span class="badge bg-primary ms-2">Tú</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ usuario.email }}</td>
+                                                <td>
+                                                    {% if usuario.es_admin %}
+                                                        <span class="badge bg-danger">Administrador</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Usuario</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if usuario.activo %}
+                                                        <span class="badge bg-success">Activo</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Inactivo</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ usuario.fecha_creacion.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                <td>
+                                                    <span class="badge bg-info">{{ usuario.cuentas|length }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{{ url_for('editar_usuario', id=usuario.id) }}" 
+                                                           class="btn btn-sm btn-outline-primary" 
+                                                           title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        
+                                                        {% if usuario.id != current_user.id %}
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-outline-danger" 
+                                                                    title="Eliminar"
+                                                                    onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.username }}')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <h4>No hay usuarios registrados</h4>
+                        <p>Comienza creando el primer usuario del sistema</p>
+                        <a href="{{ url_for('nuevo_usuario') }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>
+                            Crear Usuario
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -123,7 +264,107 @@
     </div>
 </div>
 
+<style>
+/* Estilos para las tarjetas de usuarios */
+.user-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.user-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-card .user-avatar {
+    color: #6c757d;
+}
+
+.user-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.user-info .info-row small {
+    font-weight: 500;
+}
+
+.user-info code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-card .card-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .user-info .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .user-info code {
+        max-width: 100%;
+    }
+}
+</style>
+
 <script>
+// Toggle between grid and list view
+document.getElementById('viewGrid').addEventListener('click', function() {
+    document.getElementById('gridView').classList.remove('d-none');
+    document.getElementById('listView').classList.add('d-none');
+    this.classList.add('active');
+    document.getElementById('viewList').classList.remove('active');
+});
+
+document.getElementById('viewList').addEventListener('click', function() {
+    document.getElementById('gridView').classList.add('d-none');
+    document.getElementById('listView').classList.remove('d-none');
+    this.classList.add('active');
+    document.getElementById('viewGrid').classList.remove('active');
+});
+
+// Set grid view as active by default
+document.getElementById('viewGrid').classList.add('active');
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const button = event.target.closest('button');
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalIcon;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Error copying text: ', err);
+    });
+}
+
 function confirmarEliminacion(usuarioId, nombreUsuario) {
     document.getElementById('nombreUsuarioEliminar').textContent = nombreUsuario;
     document.getElementById('formEliminarUsuario').action = `/usuarios/${usuarioId}/eliminar`;

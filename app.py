@@ -9,7 +9,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 import os
 from dotenv import load_dotenv
 
@@ -83,6 +83,8 @@ class Cuenta(db.Model):
     # Nuevo campo para asociar cuentas con usuarios
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     
+
+    
     def to_dict(self):
         """Convertir objeto a diccionario para JSON"""
         return {
@@ -99,7 +101,8 @@ class Cuenta(db.Model):
             'nombre_comprador': self.nombre_comprador,
             'whatsapp_comprador': self.whatsapp_comprador,
             'fecha_vencimiento': self.fecha_vencimiento.strftime('%Y-%m-%d') if self.fecha_vencimiento else None,
-            'usuario_id': self.usuario_id
+            'usuario_id': self.usuario_id,
+
         }
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -173,6 +176,20 @@ def index():
         # Calcular valor total del inventario (solo cuentas disponibles)
         valor_inventario_admin = db.session.query(db.func.sum(Cuenta.precio)).filter_by(estado='Disponible').scalar() or 0
         
+        # Calcular valor total de las ventas
+        valor_total_ventas_admin = db.session.query(db.func.sum(Cuenta.precio)).filter_by(estado='Vendida').scalar() or 0
+        
+        # Obtener cuentas próximas a vencer (menos de 7 días)
+        today = date.today()
+        cuentas_proximas_vencer = Cuenta.query.filter(
+            Cuenta.fecha_vencimiento.isnot(None),
+            Cuenta.fecha_vencimiento >= today,
+            Cuenta.fecha_vencimiento <= today + timedelta(days=7)
+        ).order_by(Cuenta.fecha_vencimiento.asc()).all()
+        
+        # Calcular total de cuentas por vencer
+        total_cuentas_por_vencer = len(cuentas_proximas_vencer)
+        
         # Estadísticas por usuario
         usuarios_stats = db.session.query(
             Usuario.username,
@@ -195,6 +212,24 @@ def index():
             usuario_id=current_user.id, 
             estado='Disponible'
         ).scalar() or 0
+        
+        # Calcular valor total de las ventas del usuario
+        valor_total_ventas_usuario = db.session.query(db.func.sum(Cuenta.precio)).filter_by(
+            usuario_id=current_user.id, 
+            estado='Vendida'
+        ).scalar() or 0
+        
+        # Obtener cuentas próximas a vencer del usuario (menos de 7 días)
+        today = date.today()
+        cuentas_proximas_vencer = Cuenta.query.filter(
+            Cuenta.usuario_id == current_user.id,
+            Cuenta.fecha_vencimiento.isnot(None),
+            Cuenta.fecha_vencimiento >= today,
+            Cuenta.fecha_vencimiento <= today + timedelta(days=7)
+        ).order_by(Cuenta.fecha_vencimiento.asc()).all()
+        
+        # Calcular total de cuentas por vencer
+        total_cuentas_por_vencer = len(cuentas_proximas_vencer)
         
         usuarios_stats = None
         ultimas_cuentas = Cuenta.query.filter_by(usuario_id=current_user.id).order_by(Cuenta.fecha_creacion.desc()).limit(5).all()
@@ -219,29 +254,57 @@ def index():
                          ultimas_cuentas=ultimas_cuentas,
                          usuarios_stats=usuarios_stats,
                          valor_inventario_admin=valor_inventario_admin if current_user.es_admin else 0,
-                         valor_inventario_usuario=valor_inventario_usuario if not current_user.es_admin else 0)
+                         valor_inventario_usuario=valor_inventario_usuario if not current_user.es_admin else 0,
+                         valor_total_ventas_admin=valor_total_ventas_admin if current_user.es_admin else 0,
+                         valor_total_ventas_usuario=valor_total_ventas_usuario if not current_user.es_admin else 0,
+                         cuentas_proximas_vencer=cuentas_proximas_vencer,
+                         total_cuentas_por_vencer=total_cuentas_por_vencer,
+                         today=today)
 
 @app.route('/cuentas')
 @login_required
 def cuentas():
     """Lista de cuentas"""
     plataforma = request.args.get('plataforma', '')
+    estado = request.args.get('estado', '')
+    today = datetime.now().date()
     
     if current_user.es_admin:
         # Administrador ve todas las cuentas
         query = Cuenta.query
         if plataforma:
             query = query.filter_by(plataforma=plataforma)
+        if estado:
+            query = query.filter_by(estado=estado)
     else:
         # Usuario normal solo ve sus propias cuentas
         query = Cuenta.query.filter_by(usuario_id=current_user.id)
         if plataforma:
             query = query.filter_by(plataforma=plataforma)
+        if estado:
+            query = query.filter_by(estado=estado)
     
     cuentas = query.order_by(Cuenta.fecha_creacion.desc()).all()
     plataformas_disponibles = db.session.query(Cuenta.plataforma).distinct().all()
     
-    return render_template('cuentas.html', cuentas=cuentas, plataformas=plataformas_disponibles)
+    # Calcular estadísticas
+    total_cuentas = len(cuentas)
+    cuentas_disponibles = len([c for c in cuentas if c.estado == 'Disponible'])
+    cuentas_vendidas = len([c for c in cuentas if c.estado == 'Vendida'])
+    
+    # Calcular valor total de las ventas
+    valor_total_ventas = sum(c.precio for c in cuentas if c.estado == 'Vendida')
+    
+    return render_template('cuentas.html', 
+                         cuentas=cuentas, 
+                         plataformas_disponibles=plataformas_disponibles,
+                         filtro_estado=estado,
+                         filtro_plataforma=plataforma,
+                         total_cuentas=total_cuentas,
+                         cuentas_disponibles=cuentas_disponibles,
+                         cuentas_vendidas=cuentas_vendidas,
+                         valor_total_ventas=valor_total_ventas,
+                         today=today)
 
 @app.route('/nueva_cuenta', methods=['GET', 'POST'])
 @login_required
@@ -258,15 +321,7 @@ def nueva_cuenta():
         fecha_compra = datetime.strptime(request.form.get('fecha_compra'), '%Y-%m-%d').date()
         notas = request.form.get('notas', '')
         
-        # Verificar que el email no esté duplicado para este usuario
-        cuenta_existente = Cuenta.query.filter_by(
-            email=email, 
-            usuario_id=current_user.id
-        ).first()
-        
-        if cuenta_existente:
-            flash('Ya existe una cuenta con este email para tu usuario', 'error')
-            return render_template('nueva_cuenta.html')
+        # Permitir correos duplicados - múltiples cuentas pueden tener el mismo email
         
         nueva_cuenta = Cuenta(
             plataforma=plataforma,
@@ -305,16 +360,7 @@ def editar_cuenta(id):
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Verificar que el email no esté duplicado para este usuario (excluyendo la cuenta actual)
-        cuenta_existente = Cuenta.query.filter(
-            Cuenta.email == email,
-            Cuenta.usuario_id == current_user.id,
-            Cuenta.id != id
-        ).first()
-        
-        if cuenta_existente:
-            flash('Ya existe otra cuenta con este email para tu usuario', 'error')
-            return render_template('editar_cuenta.html', cuenta=cuenta)
+        # Permitir correos duplicados - múltiples cuentas pueden tener el mismo email
         
         cuenta.plataforma = plataforma
         cuenta.email = email
@@ -415,12 +461,13 @@ def generar_mensaje_whatsapp(cuenta):
 @app.route('/cuentas/<int:id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_cuenta(id):
-    """Eliminar una cuenta (solo para administradores)"""
-    if not current_user.es_admin:
-        flash('❌ Solo los administradores pueden eliminar cuentas', 'error')
-        return redirect(url_for('ver_cuenta', id=id))
-    
+    """Eliminar una cuenta (usuarios pueden eliminar sus propias cuentas, admins pueden eliminar todas)"""
     cuenta = Cuenta.query.get_or_404(id)
+    
+    # Verificar permisos: usuarios solo pueden eliminar sus propias cuentas
+    if not current_user.es_admin and cuenta.usuario_id != current_user.id:
+        flash('❌ No tienes permisos para eliminar esta cuenta', 'error')
+        return redirect(url_for('cuentas'))
     
     try:
         db.session.delete(cuenta)
@@ -430,7 +477,7 @@ def eliminar_cuenta(id):
     except Exception as e:
         flash(f'❌ Error al eliminar cuenta: {str(e)}', 'error')
         db.session.rollback()
-        return redirect(url_for('ver_cuenta', id=cuenta.id))
+        return redirect(url_for('cuentas'))
 
 @app.route('/api/estadisticas')
 @login_required
