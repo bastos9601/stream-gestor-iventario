@@ -1,0 +1,10 @@
+{
+  "fecha_backup": "2025-08-26T13:41:03.211691",
+  "timestamp": "20250826_134103",
+  "backups": {
+    "sqlite": null,
+    "postgresql": null
+  },
+  "estado": "completado",
+  "notas": "Backup automático antes del deploy"
+}
