@@ -98,6 +98,26 @@
                              </a>
                          </div>
                      </div>
+                     
+                     <!-- Botón Importar Cuentas Vendidas -->
+                     <div class="col-md-2 d-flex align-items-end">
+                         <div class="d-grid gap-2 w-100">
+                             <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarVendidas">
+                                 <i class="fas fa-upload me-2"></i>
+                                 Importar Cuentas Vendidas
+                             </button>
+                         </div>
+                     </div>
+                     
+                     <!-- Botón Importar Cuentas Disponibles -->
+                     <div class="col-md-2 d-flex align-items-end">
+                         <div class="d-grid gap-2 w-100">
+                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportarDisponibles">
+                                 <i class="fas fa-upload me-2"></i>
+                                 Importar Cuentas Disponibles
+                             </button>
+                         </div>
+                     </div>
                 </form>
             </div>
         </div>
@@ -731,4 +751,99 @@ function copyToClipboard(text) {
     });
 }
 </script>
+
+<!-- Modal para Importar Cuentas Vendidas -->
+<div class="modal fade" id="modalImportarVendidas" tabindex="-1" aria-labelledby="modalImportarVendidasLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalImportarVendidasLabel">
+                    <i class="fas fa-upload me-2"></i>
+                    Importar Cuentas Vendidas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('importar_cuentas_vendidas') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instrucciones:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Selecciona un archivo .txt exportado previamente</li>
+                            <li>El archivo debe contener cuentas vendidas en el formato correcto</li>
+                            <li>Las cuentas duplicadas (mismo email) no se importarán</li>
+                            <li>Se importarán como cuentas vendidas con estado "Vendida"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="archivoVendidas" class="form-label">Archivo de Cuentas Vendidas (.txt)</label>
+                        <input type="file" class="form-control" id="archivoVendidas" name="archivo" accept=".txt" required>
+                        <div class="form-text">Solo archivos de texto (.txt) son permitidos</div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Nota:</strong> Esta acción importará las cuentas como vendidas. Asegúrate de que el archivo contenga la información correcta.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-upload me-2"></i>
+                        Importar Cuentas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Importar Cuentas Disponibles -->
+<div class="modal fade" id="modalImportarDisponibles" tabindex="-1" aria-labelledby="modalImportarDisponiblesLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalImportarDisponiblesLabel">
+                    <i class="fas fa-upload me-2"></i>
+                    Importar Cuentas Disponibles
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('importar_cuentas_disponibles') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instrucciones:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Selecciona un archivo .txt exportado previamente</li>
+                            <li>El archivo debe contener cuentas disponibles en el formato correcto</li>
+                            <li>Las cuentas duplicadas (mismo email) no se importarán</li>
+                            <li>Se importarán como cuentas disponibles con estado "Disponible"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="archivoDisponibles" class="form-label">Archivo de Cuentas Disponibles (.txt)</label>
+                        <input type="file" class="form-control" id="archivoDisponibles" name="archivo" accept=".txt" required>
+                        <div class="form-text">Solo archivos de texto (.txt) son permitidos</div>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Nota:</strong> Estas cuentas se agregarán a tu inventario como disponibles para venta.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>
+                        Importar Cuentas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

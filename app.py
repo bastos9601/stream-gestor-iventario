@@ -1068,6 +1068,511 @@ def exportar_usuarios():
     
     return response
 
+@app.route('/importar_cuentas_vendidas', methods=['GET', 'POST'])
+@login_required
+def importar_cuentas_vendidas():
+    """Importar cuentas vendidas desde archivo de texto"""
+    if request.method == 'POST':
+        if 'archivo' not in request.files:
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        
+        archivo = request.files['archivo']
+        if archivo.filename == '':
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        
+        if not archivo.filename.endswith('.txt'):
+            flash('El archivo debe ser de tipo .txt', 'error')
+            return redirect(request.url)
+        
+        try:
+            contenido = archivo.read().decode('utf-8')
+            cuentas_importadas = 0
+            cuentas_duplicadas = 0
+            errores = []
+            
+            # Procesar el archivo línea por línea
+            lineas = contenido.split('\n')
+            cuenta_actual = {}
+            
+            for linea in lineas:
+                linea = linea.strip()
+                
+                if linea.startswith('CUENTA #'):
+                    # Nueva cuenta, guardar la anterior si existe
+                    if cuenta_actual and 'email' in cuenta_actual:
+                        resultado = procesar_cuenta_vendida_importada(cuenta_actual, current_user.id)
+                        if resultado['exito']:
+                            cuentas_importadas += 1
+                        elif resultado['duplicado']:
+                            cuentas_duplicadas += 1
+                        else:
+                            errores.append(resultado['error'])
+                    
+                    # Iniciar nueva cuenta
+                    cuenta_actual = {}
+                    
+                elif ':' in linea:
+                    clave, valor = linea.split(':', 1)
+                    clave = clave.strip()
+                    valor = valor.strip()
+                    
+                    if clave == 'Plataforma':
+                        cuenta_actual['plataforma'] = valor
+                    elif clave == 'Email':
+                        cuenta_actual['email'] = valor
+                    elif clave == 'Contraseña':
+                        cuenta_actual['password'] = valor
+                    elif clave == 'Precio':
+                        # Extraer solo el número del precio
+                        try:
+                            precio_str = valor.replace('$', '').replace(',', '').strip()
+                            cuenta_actual['precio'] = float(precio_str)
+                        except ValueError:
+                            cuenta_actual['precio'] = 0.0
+                    elif clave == 'Fecha de Compra':
+                        try:
+                            if valor != 'N/A':
+                                # Convertir formato dd/mm/yyyy a yyyy-mm-dd
+                                if '/' in valor:
+                                    dia, mes, anio = valor.split('/')
+                                    cuenta_actual['fecha_compra'] = f"{anio}-{mes.zfill(2)}-{dia.zfill(2)}"
+                                else:
+                                    cuenta_actual['fecha_compra'] = valor
+                        except:
+                            cuenta_actual['fecha_compra'] = None
+                    elif clave == 'Fecha de Venta':
+                        try:
+                            if valor != 'N/A':
+                                # Convertir formato dd/mm/yyyy HH:MM a datetime
+                                if '/' in valor and ':' in valor:
+                                    fecha_partes = valor.split(' ')
+                                    fecha = fecha_partes[0]
+                                    hora = fecha_partes[1] if len(fecha_partes) > 1 else '00:00'
+                                    dia, mes, anio = fecha.split('/')
+                                    cuenta_actual['fecha_venta'] = f"{anio}-{mes.zfill(2)}-{dia.zfill(2)} {hora}"
+                                else:
+                                    cuenta_actual['fecha_venta'] = valor
+                        except:
+                            cuenta_actual['fecha_venta'] = None
+                    elif clave == 'Nombre del Comprador':
+                        cuenta_actual['nombre_comprador'] = valor if valor != 'N/A' else None
+                    elif clave == 'WhatsApp del Comprador':
+                        cuenta_actual['whatsapp_comprador'] = valor if valor != 'N/A' else None
+                    elif clave == 'Fecha de Vencimiento':
+                        try:
+                            if valor != 'N/A':
+                                if '/' in valor:
+                                    dia, mes, anio = valor.split('/')
+                                    cuenta_actual['fecha_vencimiento'] = f"{anio}-{mes.zfill(2)}-{dia.zfill(2)}"
+                                else:
+                                    cuenta_actual['fecha_vencimiento'] = valor
+                        except:
+                            cuenta_actual['fecha_vencimiento'] = None
+                    elif clave == 'Notas':
+                        cuenta_actual['notas'] = valor if valor != 'N/A' else None
+            
+            # Procesar la última cuenta
+            if cuenta_actual and 'email' in cuenta_actual:
+                resultado = procesar_cuenta_vendida_importada(cuenta_actual, current_user.id)
+                if resultado['exito']:
+                    cuentas_importadas += 1
+                elif resultado['duplicado']:
+                    cuentas_duplicadas += 1
+                else:
+                    errores.append(resultado['error'])
+            
+            # Mensaje de resultado
+            mensaje = f"Importación completada: {cuentas_importadas} cuentas importadas"
+            if cuentas_duplicadas > 0:
+                mensaje += f", {cuentas_duplicadas} duplicadas"
+            if errores:
+                mensaje += f", {len(errores)} errores"
+            
+            if cuentas_importadas > 0:
+                flash(mensaje, 'success')
+            elif cuentas_duplicadas > 0:
+                flash(mensaje, 'warning')
+            else:
+                flash(mensaje, 'error')
+            
+            return redirect(url_for('cuentas'))
+            
+        except Exception as e:
+            flash(f'Error al procesar el archivo: {str(e)}', 'error')
+            return redirect(request.url)
+    
+    return render_template('importar_cuentas_vendidas.html')
+
+@app.route('/importar_cuentas_disponibles', methods=['GET', 'POST'])
+@login_required
+def importar_cuentas_disponibles():
+    """Importar cuentas disponibles desde archivo de texto"""
+    if request.method == 'POST':
+        if 'archivo' not in request.files:
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        
+        archivo = request.files['archivo']
+        if archivo.filename == '':
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        
+        if not archivo.filename.endswith('.txt'):
+            flash('El archivo debe ser de tipo .txt', 'error')
+            return redirect(request.url)
+        
+        try:
+            contenido = archivo.read().decode('utf-8')
+            cuentas_importadas = 0
+            cuentas_duplicadas = 0
+            errores = []
+            
+            # Procesar el archivo línea por línea
+            lineas = contenido.split('\n')
+            cuenta_actual = {}
+            
+            for linea in lineas:
+                linea = linea.strip()
+                
+                if linea.startswith('CUENTA #'):
+                    # Nueva cuenta, guardar la anterior si existe
+                    if cuenta_actual and 'email' in cuenta_actual:
+                        resultado = procesar_cuenta_disponible_importada(cuenta_actual, current_user.id)
+                        if resultado['exito']:
+                            cuentas_importadas += 1
+                        elif resultado['duplicado']:
+                            cuentas_duplicadas += 1
+                        else:
+                            errores.append(resultado['error'])
+                    
+                    # Iniciar nueva cuenta
+                    cuenta_actual = {}
+                    
+                elif ':' in linea:
+                    clave, valor = linea.split(':', 1)
+                    clave = clave.strip()
+                    valor = valor.strip()
+                    
+                    if clave == 'Plataforma':
+                        cuenta_actual['plataforma'] = valor
+                    elif clave == 'Email':
+                        cuenta_actual['email'] = valor
+                    elif clave == 'Contraseña':
+                        cuenta_actual['password'] = valor
+                    elif clave == 'Precio':
+                        # Extraer solo el número del precio
+                        try:
+                            precio_str = valor.replace('$', '').replace(',', '').strip()
+                            cuenta_actual['precio'] = float(precio_str)
+                        except ValueError:
+                            cuenta_actual['precio'] = 0.0
+                    elif clave == 'Fecha de Compra':
+                        try:
+                            if valor != 'N/A':
+                                # Convertir formato dd/mm/yyyy a yyyy-mm-dd
+                                if '/' in valor:
+                                    dia, mes, anio = valor.split('/')
+                                    cuenta_actual['fecha_compra'] = f"{anio}-{mes.zfill(2)}-{dia.zfill(2)}"
+                                else:
+                                    cuenta_actual['fecha_compra'] = valor
+                        except:
+                            cuenta_actual['fecha_compra'] = None
+                    elif clave == 'Fecha de Vencimiento':
+                        try:
+                            if valor != 'N/A':
+                                if '/' in valor:
+                                    dia, mes, anio = valor.split('/')
+                                    cuenta_actual['fecha_vencimiento'] = f"{anio}-{mes.zfill(2)}-{dia.zfill(2)}"
+                                else:
+                                    cuenta_actual['fecha_vencimiento'] = valor
+                        except:
+                            cuenta_actual['fecha_vencimiento'] = None
+                    elif clave == 'Notas':
+                        cuenta_actual['notas'] = valor if valor != 'N/A' else None
+            
+            # Procesar la última cuenta
+            if cuenta_actual and 'email' in cuenta_actual:
+                resultado = procesar_cuenta_disponible_importada(cuenta_actual, current_user.id)
+                if resultado['exito']:
+                    cuentas_importadas += 1
+                elif resultado['duplicado']:
+                    cuentas_duplicadas += 1
+                else:
+                    errores.append(resultado['error'])
+            
+            # Mensaje de resultado
+            mensaje = f"Importación completada: {cuentas_importadas} cuentas importadas"
+            if cuentas_duplicadas > 0:
+                mensaje += f", {cuentas_duplicadas} duplicadas"
+            if errores:
+                mensaje += f", {len(errores)} errores"
+            
+            if cuentas_importadas > 0:
+                flash(mensaje, 'success')
+            elif cuentas_duplicadas > 0:
+                flash(mensaje, 'warning')
+            else:
+                flash(mensaje, 'error')
+            
+            return redirect(url_for('cuentas'))
+            
+        except Exception as e:
+            flash(f'Error al procesar el archivo: {str(e)}', 'error')
+            return redirect(request.url)
+    
+    return render_template('importar_cuentas_disponibles.html')
+
+def procesar_cuenta_vendida_importada(datos_cuenta, usuario_id):
+    """Procesar una cuenta vendida importada"""
+    try:
+        # Verificar si la cuenta ya existe (por email)
+        cuenta_existente = Cuenta.query.filter_by(
+            email=datos_cuenta['email'],
+            usuario_id=usuario_id
+        ).first()
+        
+        if cuenta_existente:
+            return {'exito': False, 'duplicado': True, 'error': f"Cuenta con email {datos_cuenta['email']} ya existe"}
+        
+        # Crear nueva cuenta
+        nueva_cuenta = Cuenta(
+            plataforma=datos_cuenta.get('plataforma', 'Desconocida'),
+            email=datos_cuenta['email'],
+            password=datos_cuenta.get('password', ''),
+            precio=datos_cuenta.get('precio', 0.0),
+            estado='Vendida',
+            usuario_id=usuario_id,
+            notas=datos_cuenta.get('notas')
+        )
+        
+        # Procesar fechas
+        if datos_cuenta.get('fecha_compra'):
+            try:
+                nueva_cuenta.fecha_compra = datetime.strptime(datos_cuenta['fecha_compra'], '%Y-%m-%d').date()
+            except:
+                nueva_cuenta.fecha_compra = datetime.now().date()
+        
+        if datos_cuenta.get('fecha_venta'):
+            try:
+                nueva_cuenta.fecha_venta = datetime.strptime(datos_cuenta['fecha_venta'], '%Y-%m-%d %H:%M')
+            except:
+                nueva_cuenta.fecha_venta = datetime.now()
+        
+        if datos_cuenta.get('fecha_vencimiento'):
+            try:
+                nueva_cuenta.fecha_vencimiento = datetime.strptime(datos_cuenta['fecha_vencimiento'], '%Y-%m-%d').date()
+            except:
+                pass
+        
+        # Datos de venta
+        nueva_cuenta.nombre_comprador = datos_cuenta.get('nombre_comprador')
+        nueva_cuenta.whatsapp_comprador = datos_cuenta.get('whatsapp_comprador')
+        
+        db.session.add(nueva_cuenta)
+        db.session.commit()
+        
+        return {'exito': True, 'duplicado': False, 'error': None}
+        
+    except Exception as e:
+        db.session.rollback()
+        return {'exito': False, 'duplicado': False, 'error': str(e)}
+
+def procesar_cuenta_disponible_importada(datos_cuenta, usuario_id):
+    """Procesar una cuenta disponible importada"""
+    try:
+        # Verificar si la cuenta ya existe (por email)
+        cuenta_existente = Cuenta.query.filter_by(
+            email=datos_cuenta['email'],
+            usuario_id=usuario_id
+        ).first()
+        
+        if cuenta_existente:
+            return {'exito': False, 'duplicado': True, 'error': f"Cuenta con email {datos_cuenta['email']} ya existe"}
+        
+        # Crear nueva cuenta
+        nueva_cuenta = Cuenta(
+            plataforma=datos_cuenta.get('plataforma', 'Desconocida'),
+            email=datos_cuenta['email'],
+            password=datos_cuenta.get('password', ''),
+            precio=datos_cuenta.get('precio', 0.0),
+            estado='Disponible',
+            usuario_id=usuario_id,
+            notas=datos_cuenta.get('notas')
+        )
+        
+        # Procesar fechas
+        if datos_cuenta.get('fecha_compra'):
+            try:
+                nueva_cuenta.fecha_compra = datetime.strptime(datos_cuenta['fecha_compra'], '%Y-%m-%d').date()
+            except:
+                nueva_cuenta.fecha_compra = datetime.now().date()
+        
+        if datos_cuenta.get('fecha_vencimiento'):
+            try:
+                nueva_cuenta.fecha_vencimiento = datetime.strptime(datos_cuenta['fecha_vencimiento'], '%Y-%m-%d').date()
+            except:
+                pass
+        
+        db.session.add(nueva_cuenta)
+        db.session.commit()
+        
+        return {'exito': True, 'duplicado': False, 'error': None}
+        
+    except Exception as e:
+        db.session.rollback()
+        return {'exito': False, 'duplicado': False, 'error': str(e)}
+
+@app.route('/importar_usuarios', methods=['GET', 'POST'])
+@login_required
+def importar_usuarios():
+    """Importar usuarios desde archivo de texto (solo para administradores)"""
+    # Verificar que solo los administradores puedan importar usuarios
+    if not current_user.es_admin:
+        flash('No tienes permisos para acceder a esta función', 'error')
+        return redirect(url_for('usuarios'))
+    
+    if request.method == 'POST':
+        if 'archivo' not in request.files:
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        
+        archivo = request.files['archivo']
+        if archivo.filename == '':
+            flash('No se seleccionó ningún archivo', 'error')
+            return redirect(request.url)
+        
+        if not archivo.filename.endswith('.txt'):
+            flash('El archivo debe ser de tipo .txt', 'error')
+            return redirect(request.url)
+        
+        try:
+            contenido = archivo.read().decode('utf-8')
+            usuarios_importados = 0
+            usuarios_duplicados = 0
+            errores = []
+            
+            # Procesar el archivo línea por línea
+            lineas = contenido.split('\n')
+            usuario_actual = {}
+            
+            for linea in lineas:
+                linea = linea.strip()
+                
+                if linea.startswith('USUARIO #'):
+                    # Nuevo usuario, guardar el anterior si existe
+                    if usuario_actual and 'username' in usuario_actual:
+                        resultado = procesar_usuario_importado(usuario_actual)
+                        if resultado['exito']:
+                            usuarios_importados += 1
+                        elif resultado['duplicado']:
+                            usuarios_duplicados += 1
+                        else:
+                            errores.append(resultado['error'])
+                    
+                    # Iniciar nuevo usuario
+                    usuario_actual = {}
+                    
+                elif ':' in linea:
+                    clave, valor = linea.split(':', 1)
+                    clave = clave.strip()
+                    valor = valor.strip()
+                    
+                    if clave == 'Nombre de Usuario':
+                        usuario_actual['username'] = valor
+                    elif clave == 'Email':
+                        usuario_actual['email'] = valor
+                    elif clave == 'Tipo de Usuario':
+                        usuario_actual['es_admin'] = valor == 'Administrador'
+                    elif clave == 'Estado':
+                        usuario_actual['activo'] = valor == 'Activo'
+                    elif clave == 'Fecha de Creación':
+                        try:
+                            if valor != 'N/A':
+                                # Convertir formato dd/mm/yyyy HH:MM:SS a datetime
+                                if '/' in valor and ':' in valor:
+                                    fecha_partes = valor.split(' ')
+                                    fecha = fecha_partes[0]
+                                    hora = fecha_partes[1] if len(fecha_partes) > 1 else '00:00:00'
+                                    dia, mes, anio = fecha.split('/')
+                                    usuario_actual['fecha_creacion'] = f"{anio}-{mes.zfill(2)}-{dia.zfill(2)} {hora}"
+                                else:
+                                    usuario_actual['fecha_creacion'] = valor
+                        except:
+                            usuario_actual['fecha_creacion'] = None
+            
+            # Procesar el último usuario
+            if usuario_actual and 'username' in usuario_actual:
+                resultado = procesar_usuario_importado(usuario_actual)
+                if resultado['exito']:
+                    usuarios_importados += 1
+                elif resultado['duplicado']:
+                    usuarios_duplicados += 1
+                else:
+                    errores.append(resultado['error'])
+            
+            # Mensaje de resultado
+            mensaje = f"Importación completada: {usuarios_importados} usuarios importados"
+            if usuarios_duplicados > 0:
+                mensaje += f", {usuarios_duplicados} duplicados"
+            if errores:
+                mensaje += f", {len(errores)} errores"
+            
+            if usuarios_importados > 0:
+                flash(mensaje, 'success')
+            elif usuarios_duplicados > 0:
+                flash(mensaje, 'warning')
+            else:
+                flash(mensaje, 'error')
+            
+            return redirect(url_for('usuarios'))
+            
+        except Exception as e:
+            flash(f'Error al procesar el archivo: {str(e)}', 'error')
+            return redirect(request.url)
+    
+    return redirect(url_for('usuarios'))
+
+def procesar_usuario_importado(datos_usuario):
+    """Procesar un usuario importado"""
+    try:
+        # Verificar si el usuario ya existe (por username o email)
+        usuario_existente = Usuario.query.filter(
+            (Usuario.username == datos_usuario['username']) |
+            (Usuario.email == datos_usuario['email'])
+        ).first()
+        
+        if usuario_existente:
+            return {'exito': False, 'duplicado': True, 'error': f"Usuario con username {datos_usuario['username']} o email {datos_usuario['email']} ya existe"}
+        
+        # Crear nuevo usuario
+        nuevo_usuario = Usuario(
+            username=datos_usuario['username'],
+            email=datos_usuario['email'],
+            es_admin=datos_usuario.get('es_admin', False),
+            activo=datos_usuario.get('activo', True)
+        )
+        
+        # Establecer contraseña por defecto
+        nuevo_usuario.set_password('password123')
+        
+        # Procesar fecha de creación
+        if datos_usuario.get('fecha_creacion'):
+            try:
+                nuevo_usuario.fecha_creacion = datetime.strptime(datos_usuario['fecha_creacion'], '%Y-%m-%d %H:%M:%S')
+            except:
+                nuevo_usuario.fecha_creacion = datetime.now()
+        
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+        
+        return {'exito': True, 'duplicado': False, 'error': None}
+        
+    except Exception as e:
+        db.session.rollback()
+        return {'exito': False, 'duplicado': False, 'error': str(e)}
+
 def crear_admin_inicial():
     """Crear usuario administrador inicial si no existe"""
     admin = Usuario.query.filter_by(es_admin=True).first()
