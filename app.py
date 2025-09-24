@@ -1604,7 +1604,11 @@ def procesar_usuario_importado(datos_usuario):
 
 def crear_admin_inicial():
     """Crear usuario administrador inicial si no existe"""
-    admin = Usuario.query.filter_by(es_admin=True).first()
+    # Verificar si ya existe un usuario admin por username o email
+    admin = Usuario.query.filter(
+        (Usuario.username == 'admin') | (Usuario.email == 'admin@gestor.com')
+    ).first()
+    
     if not admin:
         admin = Usuario(
             username='admin',
@@ -1619,6 +1623,8 @@ def crear_admin_inicial():
         print("   Usuario: admin")
         print("   Contraseña: admin123")
         print("   ⚠️  IMPORTANTE: Cambia la contraseña después del primer inicio de sesión")
+    else:
+        print("ℹ️  Usuario administrador ya existe")
 
 if __name__ == '__main__':
     with app.app_context():
