@@ -30,54 +30,60 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'tu-clave-secreta-aqui-infinityfree')
 
 # Configuración de base de datos
-# Para desarrollo local usa SQLite, para producción usa MySQL
+# Para desarrollo local usa SQLite, para producción usa PostgreSQL
 print(f"🔍 Debug - FLASK_ENV: {os.getenv('FLASK_ENV')}")
+print(f"🔍 Debug - DATABASE_URL: {os.getenv('DATABASE_URL')}")
 print(f"🔍 Debug - DB_HOST: {os.getenv('DB_HOST')}")
 print(f"🔍 Debug - DB_NAME: {os.getenv('DB_NAME')}")
 print(f"🔍 Debug - DB_USER: {os.getenv('DB_USER')}")
 
-if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST'):
+if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DATABASE_URL'):
     # Configuración para desarrollo local con SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///streaming_accounts.db'
     print("🔧 Modo desarrollo: Usando SQLite")
 else:
-    # Configuración para MySQL en Koyeb/InfinityFree
-    DB_HOST = os.getenv('DB_HOST')
-    DB_NAME = os.getenv('DB_NAME')
-    DB_USER = os.getenv('DB_USER')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
+    # Configuración para PostgreSQL en Koyeb
+    DATABASE_URL = os.getenv('DATABASE_URL')
     
-    if not all([DB_HOST, DB_NAME, DB_USER, DB_PASSWORD]):
-        print("❌ Error: Variables de entorno de base de datos no configuradas correctamente")
-        print("🔧 Usando SQLite como fallback")
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///streaming_accounts.db'
+    if DATABASE_URL:
+        # Usar DATABASE_URL si está disponible (formato estándar de Koyeb)
+        app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+        print("🚀 Modo producción: Usando PostgreSQL (DATABASE_URL)")
     else:
-        # Construir la URI de MySQL usando PyMySQL
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
-        print("🚀 Modo producción: Usando MySQL")
-        print(f"🔗 Conectando a: {DB_HOST}/{DB_NAME}")
+        # Fallback a variables individuales
+        DB_HOST = os.getenv('DB_HOST')
+        DB_NAME = os.getenv('DB_NAME')
+        DB_USER = os.getenv('DB_USER')
+        DB_PASSWORD = os.getenv('DB_PASSWORD')
+        
+        if not all([DB_HOST, DB_NAME, DB_USER, DB_PASSWORD]):
+            print("❌ Error: Variables de entorno de base de datos no configuradas correctamente")
+            print("🔧 Usando SQLite como fallback")
+            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///streaming_accounts.db'
+        else:
+            # Construir la URI de PostgreSQL
+            app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
+            print("🚀 Modo producción: Usando PostgreSQL")
+            print(f"🔗 Conectando a: {DB_HOST}/{DB_NAME}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configuración del motor de base de datos
-if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST') or not all([os.getenv('DB_HOST'), os.getenv('DB_NAME'), os.getenv('DB_USER'), os.getenv('DB_PASSWORD')]):
+if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DATABASE_URL'):
     # Configuración para SQLite (desarrollo)
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True
     }
     print("🔧 Configuración del motor: SQLite")
 else:
-    # Configuración optimizada para MySQL en Koyeb/InfinityFree con PyMySQL
+    # Configuración optimizada para PostgreSQL en Koyeb
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_size': 5,  # Reducido para Koyeb
         'pool_timeout': 10,
         'pool_recycle': 3600,  # Reciclar conexiones cada hora
         'max_overflow': 2,
-        'connect_args': {
-            'charset': 'utf8mb4',  # Soporte completo para caracteres especiales
-            'connect_timeout': 10
-        }
+        'pool_pre_ping': True
     }
-    print("🚀 Configuración del motor: MySQL")
+    print("🚀 Configuración del motor: PostgreSQL")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -1617,27 +1623,33 @@ def procesar_usuario_importado(datos_usuario):
 
 def crear_admin_inicial():
     """Crear usuario administrador inicial si no existe"""
-    # Verificar si ya existe un usuario admin por username o email
-    admin = Usuario.query.filter(
-        (Usuario.username == 'admin') | (Usuario.email == 'admin@gestor.com')
-    ).first()
-    
-    if not admin:
-        admin = Usuario(
-            username='admin',
-            email='admin@gestor.com',
-            es_admin=True,
-            activo=True
-        )
-        admin.set_password('admin123')
-        db.session.add(admin)
-        db.session.commit()
-        print("✅ Usuario administrador creado:")
-        print("   Usuario: admin")
-        print("   Contraseña: admin123")
-        print("   ⚠️  IMPORTANTE: Cambia la contraseña después del primer inicio de sesión")
-    else:
-        print("ℹ️  Usuario administrador ya existe")
+    try:
+        # Verificar si ya existe un usuario admin por username o email
+        admin = Usuario.query.filter(
+            (Usuario.username == 'admin') | (Usuario.email == 'admin@gestor.com')
+        ).first()
+        
+        if not admin:
+            admin = Usuario(
+                username='admin',
+                email='admin@gestor.com',
+                es_admin=True,
+                activo=True
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print("✅ Usuario administrador creado:")
+            print("   Usuario: admin")
+            print("   Contraseña: admin123")
+            print("   ⚠️  IMPORTANTE: Cambia la contraseña después del primer inicio de sesión")
+        else:
+            print("ℹ️  Usuario administrador ya existe")
+    except Exception as e:
+        print(f"⚠️  Error al crear usuario administrador: {e}")
+        db.session.rollback()
+        # Si hay error, probablemente ya existe, continuar sin fallar
+        print("ℹ️  Continuando sin crear usuario administrador")
 
 if __name__ == '__main__':
     with app.app_context():
