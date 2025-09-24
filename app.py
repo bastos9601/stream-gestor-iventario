@@ -47,6 +47,9 @@ else:
     
     if DATABASE_URL:
         # Usar DATABASE_URL si está disponible (formato estándar de Koyeb)
+        # Corregir postgres:// a postgresql:// para compatibilidad con SQLAlchemy
+        if DATABASE_URL.startswith('postgres://'):
+            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
         app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
         print("🚀 Modo producción: Usando PostgreSQL (DATABASE_URL)")
     else:
