@@ -3,6 +3,7 @@
 """
 Gestor de Cuentas de Streaming - Aplicación Web
 Sistema web para gestionar inventario de cuentas de streaming desde cualquier dispositivo
+ADAPTADO PARA INFINITYFREE
 """
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
@@ -15,24 +16,55 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Función para manejar collations según el tipo de base de datos
+def get_collation():
+    """Retorna la collation apropiada según el tipo de base de datos"""
+    if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST'):
+        return None  # SQLite no soporta collations personalizadas
+    else:
+        return 'utf8mb4_unicode_ci'  # MySQL
+
 app = Flask(__name__)
 
-# Configuración para Render
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'tu-clave-secreta-aqui')
+# Configuración para InfinityFree
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'tu-clave-secreta-aqui-infinityfree')
 
-# Configuración de base de datos para PostgreSQL en Render
-database_url = os.getenv('DATABASE_URL')
-if database_url and database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///gestor_cuentas.db'
+# Configuración de base de datos
+# Para desarrollo local usa SQLite, para producción usa MySQL
+if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST'):
+    # Configuración para desarrollo local con SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///streaming_accounts.db'
+    print("🔧 Modo desarrollo: Usando SQLite")
+else:
+    # Configuración para MySQL en InfinityFree
+    DB_HOST = os.getenv('DB_HOST', 'sql.infinityfree.com')
+    DB_NAME = os.getenv('DB_NAME', 'tu_base_datos')
+    DB_USER = os.getenv('DB_USER', 'tu_usuario')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', 'tu_contraseña')
+    
+    # Construir la URI de MySQL para InfinityFree usando PyMySQL
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
+    print("🚀 Modo producción: Usando MySQL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 10,
-    'pool_timeout': 20,
-    'pool_recycle': 300,
-    'max_overflow': 0
-}
+
+# Configuración del motor de base de datos
+if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST'):
+    # Configuración para SQLite (desarrollo)
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True
+    }
+else:
+    # Configuración optimizada para MySQL en InfinityFree con PyMySQL
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 5,  # Reducido para InfinityFree
+        'pool_timeout': 10,
+        'pool_recycle': 3600,  # Reciclar conexiones cada hora
+        'max_overflow': 2,
+        'connect_args': {
+            'charset': 'utf8mb4',  # Soporte completo para caracteres especiales
+            'connect_timeout': 10
+        }
+    }
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -47,15 +79,15 @@ def load_user(user_id):
 # Modelo de Usuario
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
+    username = db.Column(db.String(80, collation=get_collation()), unique=True, nullable=False)
+    email = db.Column(db.String(120, collation=get_collation()), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200, collation=get_collation()), nullable=False)
     es_admin = db.Column(db.Boolean, default=False)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     activo = db.Column(db.Boolean, default=True)
     
     # Relación con cuentas
-    cuentas = db.relationship('Cuenta', backref='usuario', lazy=True)
+    cuentas = db.relationship('Cuenta', backref='usuario', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -63,27 +95,25 @@ class Usuario(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Modelo de Cuenta (actualizado)
+# Modelo de Cuenta (actualizado para MySQL)
 class Cuenta(db.Model):
     """Modelo de la base de datos para las cuentas"""
     id = db.Column(db.Integer, primary_key=True)
-    plataforma = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    plataforma = db.Column(db.String(100, collation=get_collation()), nullable=False)
+    email = db.Column(db.String(120, collation=get_collation()), nullable=False)
+    password = db.Column(db.String(200, collation=get_collation()), nullable=False)
     precio = db.Column(db.Float, nullable=False)
     fecha_compra = db.Column(db.Date, nullable=False)
-    notas = db.Column(db.Text)
-    estado = db.Column(db.String(20), default='Disponible')
+    notas = db.Column(db.Text(collation=get_collation()))
+    estado = db.Column(db.String(20, collation=get_collation()), default='Disponible')
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_venta = db.Column(db.DateTime)
-    nombre_comprador = db.Column(db.String(100))
-    whatsapp_comprador = db.Column(db.String(20))
+    nombre_comprador = db.Column(db.String(100, collation=get_collation()))
+    whatsapp_comprador = db.Column(db.String(20, collation=get_collation()))
     fecha_vencimiento = db.Column(db.Date)
     
     # Nuevo campo para asociar cuentas con usuarios
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    
-
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
     
     def to_dict(self):
         """Convertir objeto a diccionario para JSON"""
@@ -102,7 +132,6 @@ class Cuenta(db.Model):
             'whatsapp_comprador': self.whatsapp_comprador,
             'fecha_vencimiento': self.fecha_vencimiento.strftime('%Y-%m-%d') if self.fecha_vencimiento else None,
             'usuario_id': self.usuario_id,
-
         }
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -1598,7 +1627,7 @@ if __name__ == '__main__':
     
     app.run(debug=True, host='0.0.0.0', port=5000)
 else:
-    # Configuración para producción (Render)
+    # Configuración para producción (InfinityFree)
     with app.app_context():
         db.create_all()
         crear_admin_inicial()

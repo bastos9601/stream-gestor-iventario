@@ -1,127 +1,86 @@
 # Gestor de Cuentas de Streaming
 
-Un sistema completo para gestionar inventario de cuentas de streaming, ideal para mantener un stock organizado y facilitar la venta posterior.
+Sistema web para gestionar inventario de cuentas de streaming desde cualquier dispositivo.
 
-## 🚀 Características
+## 🚀 Despliegue en Koyeb
 
-- **Gestión de Inventario**: Agregar, listar y buscar cuentas
-- **Control de Estado**: Seguimiento de cuentas disponibles y vendidas
-- **Base de Datos SQLite**: Almacenamiento persistente y confiable
-- **Interfaz de Línea de Comandos**: Fácil de usar con menús intuitivos
-- **Estadísticas en Tiempo Real**: Resumen del inventario y valor total
-- **Filtros Avanzados**: Búsqueda por plataforma y estado
-- **Historial Completo**: Fechas de compra y venta
+### Prerrequisitos
+- Cuenta en [Koyeb](https://koyeb.com)
+- Repositorio en GitHub, GitLab o Bitbucket
 
-## 📋 Requisitos
+### Pasos para Desplegar
 
-- Python 3.6 o superior
-- pip (gestor de paquetes de Python)
-
-## 🛠️ Instalación
-
-1. **Clona o descarga el proyecto**
-2. **Instala las dependencias**:
+1. **Preparar el Repositorio**
    ```bash
-   pip install -r requirements.txt
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/tu-usuario/tu-repositorio.git
+   git push -u origin main
    ```
 
-## 🎯 Uso
+2. **Crear Aplicación en Koyeb**
+   - Ve a [Koyeb Dashboard](https://app.koyeb.com)
+   - Haz clic en "Create App"
+   - Conecta tu repositorio de Git
+   - Selecciona el repositorio y branch
 
-### Ejecutar el programa:
+3. **Configurar Variables de Entorno**
+   En la sección "Environment Variables" de Koyeb, agrega:
+   ```
+   FLASK_ENV=production
+   SECRET_KEY=tu-clave-secreta-muy-segura-aqui
+   DB_HOST=tu-host-mysql-koyeb
+   DB_NAME=tu-nombre-base-datos
+   DB_USER=tu-usuario-mysql
+   DB_PASSWORD=tu-contraseña-mysql
+   ```
+
+4. **Configurar Base de Datos MySQL**
+   - En Koyeb, ve a "Databases"
+   - Crea una nueva base de datos MySQL
+   - Copia las credenciales de conexión
+   - Actualiza las variables de entorno con estas credenciales
+
+5. **Desplegar**
+   - Koyeb detectará automáticamente que es una aplicación Python
+   - Usará el `Procfile` para iniciar la aplicación
+   - La aplicación estará disponible en la URL proporcionada por Koyeb
+
+### 🔧 Configuración Local
+
+Para desarrollo local:
+
 ```bash
-python gestor_cuentas.py
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Ejecutar en modo desarrollo
+python app.py
 ```
 
-### Funcionalidades disponibles:
+La aplicación usará SQLite automáticamente en modo desarrollo.
 
-1. **Agregar nueva cuenta**: Ingresa plataforma, email, contraseña, precio y notas
-2. **Listar cuentas disponibles**: Ver solo las cuentas en stock
-3. **Listar todas las cuentas**: Ver el inventario completo con estados
-4. **Buscar cuenta por email**: Encontrar una cuenta específica
-5. **Vender cuenta**: Marcar una cuenta como vendida
-6. **Ver estadísticas**: Resumen del inventario y valor total
-7. **Salir**: Cerrar el programa
+### 📁 Estructura del Proyecto
 
-## 🗄️ Estructura de la Base de Datos
+```
+├── app.py              # Aplicación principal Flask
+├── requirements.txt    # Dependencias Python
+├── Procfile           # Configuración para Koyeb
+├── runtime.txt        # Versión de Python
+├── .gitignore         # Archivos a ignorar en Git
+└── env.example        # Ejemplo de variables de entorno
+```
 
-La aplicación crea automáticamente una base de datos SQLite con la siguiente estructura:
+### 🔐 Seguridad
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| id | INTEGER | Identificador único (auto-incremento) |
-| plataforma | TEXT | Nombre de la plataforma (Netflix, Disney+, etc.) |
-| email | TEXT | Email de la cuenta (único) |
-| password | TEXT | Contraseña de la cuenta |
-| estado | TEXT | Estado actual (disponible/vendida) |
-| precio | REAL | Precio de venta |
-| fecha_compra | DATE | Fecha de adquisición |
-| fecha_venta | DATE | Fecha de venta (NULL si disponible) |
-| notas | TEXT | Notas adicionales |
-| created_at | TIMESTAMP | Fecha de creación del registro |
+- Cambia la contraseña del usuario administrador después del primer inicio
+- Usa una SECRET_KEY segura en producción
+- Configura HTTPS en Koyeb para mayor seguridad
 
-## 💡 Ejemplos de Uso
+### 📞 Soporte
 
-### Agregar una cuenta de Netflix:
-- Plataforma: Netflix
-- Email: usuario@ejemplo.com
-- Contraseña: contraseña123
-- Precio: 15.99
-- Notas: Cuenta premium 4K
-
-### Vender una cuenta:
-- Selecciona opción 5
-- Ingresa el email de la cuenta
-- La cuenta se marca automáticamente como vendida
-
-## 🔍 Filtros y Búsquedas
-
-- **Por estado**: Solo disponibles, solo vendidas, o todas
-- **Por plataforma**: Filtrar por servicio específico
-- **Por email**: Búsqueda exacta de cuentas
-
-## 📊 Estadísticas
-
-El sistema proporciona estadísticas en tiempo real:
-- Total de cuentas en inventario
-- Cuentas disponibles para venta
-- Cuentas ya vendidas
-- Valor total del inventario disponible
-- Distribución por plataforma
-
-## 🛡️ Seguridad
-
-- Las contraseñas se almacenan en texto plano (considera encriptar para producción)
-- Base de datos local (no se comparte información)
-- Validación de datos de entrada
-
-## 🚧 Limitaciones Actuales
-
-- No incluye encriptación de contraseñas
-- Interfaz solo de línea de comandos
-- No incluye sistema de usuarios múltiples
-
-## 🔮 Futuras Mejoras
-
-- [ ] Interfaz gráfica (GUI)
-- [ ] Encriptación de contraseñas
-- [ ] Sistema de usuarios y permisos
-- [ ] Exportación de datos (CSV, Excel)
-- [ ] Backup automático de la base de datos
-- [ ] Notificaciones de stock bajo
-- [ ] Historial de cambios y auditoría
-
-## 📝 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
-## 🤝 Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, abre un issue o pull request para sugerencias y mejoras.
-
-## 📞 Soporte
-
-Si tienes problemas o preguntas, por favor abre un issue en el repositorio del proyecto.
-
----
-
-**¡Disfruta gestionando tu inventario de cuentas de streaming de manera eficiente!** 🎬✨
+Si tienes problemas con el despliegue, revisa:
+- Los logs de la aplicación en Koyeb
+- Las variables de entorno están configuradas correctamente
+- La base de datos MySQL está accesible

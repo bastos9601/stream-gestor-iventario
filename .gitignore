@@ -128,17 +128,22 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Database
+# Database files
 *.db
 *.sqlite
 *.sqlite3
+streaming_accounts.db
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log

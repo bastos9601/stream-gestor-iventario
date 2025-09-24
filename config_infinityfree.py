@@ -6,6 +6,31 @@ Configuración para InfinityFree
 
 import os
 
+# Configuración para InfinityFree
+# Este archivo contiene la configuración de la base de datos MySQL
+
+# Configuración de la base de datos MySQL en InfinityFree
+DB_HOST = 'sql.infinityfree.com'
+DB_NAME = 'if0_39819776_hplay_gestor_db'  # Cambiar por el nombre real de tu base de datos
+DB_USER = 'if0_39819776'      # Cambiar por tu usuario de base de datos
+DB_PASSWORD = 'tKG8hdlcWWT8X'  # Cambiar por tu contraseña de base de datos
+
+# Configuración de la aplicación
+SECRET_KEY = 'alfredo0152025'
+
+# Configuración de MySQL optimizada para InfinityFree
+MYSQL_CONFIG = {
+    'pool_size': 5,
+    'pool_timeout': 10,
+    'pool_recycle': 3600,
+    'max_overflow': 2,
+    'connect_timeout': 10,
+    'charset': 'utf8mb4'
+}
+
+# URL de la base de datos
+DATABASE_URL = f'mysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
+
 class Config:
     """Configuración base"""
     SECRET_KEY = 'tu_clave_secreta_aqui_2024_infinityfree'
