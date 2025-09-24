@@ -31,32 +31,44 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'tu-clave-secreta-aqui-infini
 
 # Configuración de base de datos
 # Para desarrollo local usa SQLite, para producción usa MySQL
+print(f"🔍 Debug - FLASK_ENV: {os.getenv('FLASK_ENV')}")
+print(f"🔍 Debug - DB_HOST: {os.getenv('DB_HOST')}")
+print(f"🔍 Debug - DB_NAME: {os.getenv('DB_NAME')}")
+print(f"🔍 Debug - DB_USER: {os.getenv('DB_USER')}")
+
 if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST'):
     # Configuración para desarrollo local con SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///streaming_accounts.db'
     print("🔧 Modo desarrollo: Usando SQLite")
 else:
-    # Configuración para MySQL en InfinityFree
-    DB_HOST = os.getenv('DB_HOST', 'sql.infinityfree.com')
-    DB_NAME = os.getenv('DB_NAME', 'tu_base_datos')
-    DB_USER = os.getenv('DB_USER', 'tu_usuario')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'tu_contraseña')
+    # Configuración para MySQL en Koyeb/InfinityFree
+    DB_HOST = os.getenv('DB_HOST')
+    DB_NAME = os.getenv('DB_NAME')
+    DB_USER = os.getenv('DB_USER')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
     
-    # Construir la URI de MySQL para InfinityFree usando PyMySQL
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
-    print("🚀 Modo producción: Usando MySQL")
+    if not all([DB_HOST, DB_NAME, DB_USER, DB_PASSWORD]):
+        print("❌ Error: Variables de entorno de base de datos no configuradas correctamente")
+        print("🔧 Usando SQLite como fallback")
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///streaming_accounts.db'
+    else:
+        # Construir la URI de MySQL usando PyMySQL
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
+        print("🚀 Modo producción: Usando MySQL")
+        print(f"🔗 Conectando a: {DB_HOST}/{DB_NAME}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configuración del motor de base de datos
-if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST'):
+if os.getenv('FLASK_ENV') == 'development' or not os.getenv('DB_HOST') or not all([os.getenv('DB_HOST'), os.getenv('DB_NAME'), os.getenv('DB_USER'), os.getenv('DB_PASSWORD')]):
     # Configuración para SQLite (desarrollo)
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True
     }
+    print("🔧 Configuración del motor: SQLite")
 else:
-    # Configuración optimizada para MySQL en InfinityFree con PyMySQL
+    # Configuración optimizada para MySQL en Koyeb/InfinityFree con PyMySQL
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_size': 5,  # Reducido para InfinityFree
+        'pool_size': 5,  # Reducido para Koyeb
         'pool_timeout': 10,
         'pool_recycle': 3600,  # Reciclar conexiones cada hora
         'max_overflow': 2,
@@ -65,6 +77,7 @@ else:
             'connect_timeout': 10
         }
     }
+    print("🚀 Configuración del motor: MySQL")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
